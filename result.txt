@@ -1,0 +1,26 @@
+Analyzing HeartConnect...                                       
+
+warning - The value of the local variable 'replacement' isn't used - fix_alpha.dart:15:16 - unused_local_variable
+   info - Statements in an if should be enclosed in a block - fix_alpha.dart:24:40 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - fix_alpha.dart:25:16 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - fix_alpha.dart:27:86 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - fix_alpha.dart:28:16 - curly_braces_in_flow_control_structures
+   info - Don't invoke 'print' in production code - fix_alpha.dart:41:5 - avoid_print
+warning - Unused import: '../theme/app_theme.dart' - lib\screens\dashboard_screen.dart:12:8 - unused_import
+warning - Unused import: '../widgets/shared_widgets.dart' - lib\screens\dashboard_screen.dart:13:8 - unused_import
+warning - A value for optional parameter 'fw' isn't ever given - lib\screens\dashboard_screen.dart:73:63 - unused_element_parameter
+warning - The value of the field '_acceptedStudentId' isn't used - lib\screens\job_detail_screen.dart:30:11 - unused_field
+warning - Unused import: '../theme/app_theme.dart' - lib\screens\main_screen.dart:10:8 - unused_import
+   info - Statements in an if should be enclosed in a block - lib\screens\main_screen.dart:70:26 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\screens\main_screen.dart:71:14 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\screens\reviews_screen.dart:81:35 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\screens\reviews_screen.dart:82:18 - curly_braces_in_flow_control_structures
+warning - The declaration '_is2FAEnabled' isn't referenced - lib\screens\two_factor_screen.dart:34:12 - unused_element
+   info - Statements in an if should be enclosed in a block - lib\screens\two_factor_screen.dart:52:20 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\screens\two_factor_screen.dart:80:20 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\screens\two_factor_screen.dart:111:20 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\screens\two_factor_screen.dart:144:20 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\screens\user_profile_screen.dart:48:20 - curly_braces_in_flow_control_structures
+warning - The value of the field '_reconnectAttempts' isn't used - lib\services\chat_service.dart:10:7 - unused_field
+warning - The value of the field '_maxReconnectDelay' isn't used - lib\services\chat_service.dart:11:16 - unused_field
+

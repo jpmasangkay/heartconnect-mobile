@@ -1,0 +1,10 @@
+Analyzing HeartConnect...                                       
+
+warning - The value of the local variable 'replacement' isn't used - fix_alpha.dart:15:16 - unused_local_variable
+   info - Statements in an if should be enclosed in a block - fix_alpha.dart:24:40 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - fix_alpha.dart:25:16 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - fix_alpha.dart:27:86 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - fix_alpha.dart:28:16 - curly_braces_in_flow_control_structures
+   info - Don't invoke 'print' in production code - fix_alpha.dart:41:5 - avoid_print
+warning - The value of the local variable 'acceptedApp' isn't used - lib\screens\job_detail_screen.dart:102:13 - unused_local_variable
+
