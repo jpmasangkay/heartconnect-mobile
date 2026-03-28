@@ -61,7 +61,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
       if (mounted) {
         setState(() {
           _submitting = false;
-          _error = e.toString().replaceAll('Exception: ', '');
+          _error = _service.extractError(e);
         });
       }
     }
@@ -91,7 +91,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
       if (mounted) {
         setState(() {
           _submitting = false;
-          _error = e.toString().replaceAll('Exception: ', '');
+          _error = _service.extractError(e);
         });
       }
     }

@@ -29,9 +29,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _submit() async {
     final email = _emailCtrl.text.trim();
     final pass = _passCtrl.text;
+    final isValidEmail =
+        RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email);
     if (email.isEmpty || pass.isEmpty) {
       if (!mounted) return;
       setState(() => _error = 'Please fill in all fields.');
+      return;
+    }
+    if (!isValidEmail) {
+      if (!mounted) return;
+      setState(() => _error = 'Please enter a valid email address.');
       return;
     }
     if (!mounted) return;
@@ -64,7 +71,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = ref.read(authProvider).error ?? e.toString();
+        _error = ref.read(authServiceProvider).extractError(e);
       });
     } finally {
       if (mounted) {

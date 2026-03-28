@@ -19,43 +19,17 @@ class _TwoFactorScreenState extends ConsumerState<TwoFactorScreen> {
   String? _success;
 
   // Setup state
-  String? _qrCodeUrl;
-  String? _secret;
-  final _codeController = TextEditingController();
   final _passwordController = TextEditingController();
 
   @override
   void dispose() {
-    _codeController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
   String? get _currentMethod => ref.read(authProvider).user?.twoFactorMethod;
 
-  Future<void> _setupTOTP() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
-    try {
-      final data = await _service.setup('totp');
-      if (mounted) {
-        setState(() {
-          _loading = false;
-          _qrCodeUrl = data['qrCodeUrl'];
-          _secret = data['secret'];
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _loading = false;
-          _error = e.toString().replaceAll('Exception: ', '');
-        });
-      }
-    }
-  }
+
 
   Future<void> _setupEmail() async {
     setState(() {
@@ -81,44 +55,13 @@ class _TwoFactorScreenState extends ConsumerState<TwoFactorScreen> {
       if (mounted) {
         setState(() {
           _loading = false;
-          _error = e.toString().replaceAll('Exception: ', '');
+          _error = _service.extractError(e);
         });
       }
     }
   }
 
-  Future<void> _verifySetup() async {
-    if (_codeController.text.trim().isEmpty) return;
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
-    try {
-      await _service.verifySetup(_codeController.text.trim());
-      if (mounted) {
-        setState(() {
-          _loading = false;
-          _qrCodeUrl = null;
-          _secret = null;
-          _success = '2FA enabled successfully!';
-        });
-        _codeController.clear();
-        final user = ref.read(authProvider).user;
-        if (user != null) {
-          ref.read(authProvider.notifier).updateUser(
-            user.copyWith(twoFactorEnabled: true, twoFactorMethod: 'totp'),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _loading = false;
-          _error = e.toString().replaceAll('Exception: ', '');
-        });
-      }
-    }
-  }
+
 
   Future<void> _disable() async {
     if (_passwordController.text.trim().isEmpty) return;
@@ -129,7 +72,6 @@ class _TwoFactorScreenState extends ConsumerState<TwoFactorScreen> {
     try {
       await _service.disable(
         _passwordController.text.trim(),
-        code: _currentMethod == 'totp' ? _codeController.text.trim() : null,
       );
       if (mounted) {
         setState(() {
@@ -137,7 +79,6 @@ class _TwoFactorScreenState extends ConsumerState<TwoFactorScreen> {
           _success = '2FA disabled.';
         });
         _passwordController.clear();
-        _codeController.clear();
         final user = ref.read(authProvider).user;
         if (user != null) {
           ref.read(authProvider.notifier).updateUser(
@@ -149,7 +90,7 @@ class _TwoFactorScreenState extends ConsumerState<TwoFactorScreen> {
       if (mounted) {
         setState(() {
           _loading = false;
-          _error = e.toString().replaceAll('Exception: ', '');
+          _error = _service.extractError(e);
         });
       }
     }
@@ -191,7 +132,7 @@ class _TwoFactorScreenState extends ConsumerState<TwoFactorScreen> {
                             style: GoogleFonts.dmSans(
                                 fontWeight: FontWeight.w700, fontSize: 16)),
                         if (is2FA && method != null)
-                          Text('Method: ${method == 'totp' ? 'Authenticator App' : 'Email'}',
+                          Text('Method: Email',
                               style: GoogleFonts.inter(
                                   fontSize: 13, color: AppColors.textMuted)),
                       ],
@@ -242,49 +183,8 @@ class _TwoFactorScreenState extends ConsumerState<TwoFactorScreen> {
               const SizedBox(height: 16),
             ],
 
-            // QR code setup flow
-            if (_qrCodeUrl != null) ...[
-              Text('Scan this QR code with your authenticator app',
-                  style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 15)),
-              const SizedBox(height: 16),
-              Center(
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: AppColors.cardShadow,
-                  ),
-                  child: Image.network(_qrCodeUrl!, width: 200, height: 200),
-                ),
-              ),
-              if (_secret != null) ...[
-                const SizedBox(height: 12),
-                Text('Manual key: $_secret',
-                    style: GoogleFonts.inter(fontSize: 12, color: AppColors.textMuted),
-                    textAlign: TextAlign.center),
-              ],
-              const SizedBox(height: 20),
-              TextField(
-                controller: _codeController,
-                keyboardType: TextInputType.number,
-                maxLength: 6,
-                decoration: const InputDecoration(
-                  hintText: 'Enter 6-digit code',
-                  counterText: '',
-                ),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _loading ? null : _verifySetup,
-                child: _loading
-                    ? const SizedBox(width: 20, height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : const Text('Verify & Enable'),
-              ),
-            ]
             // Disable flow
-            else if (is2FA) ...[
+            if (is2FA) ...[
               Text('Disable 2FA',
                   style: GoogleFonts.dmSans(
                       fontWeight: FontWeight.w700, fontSize: 18, color: AppColors.navy)),
@@ -294,18 +194,7 @@ class _TwoFactorScreenState extends ConsumerState<TwoFactorScreen> {
                 obscureText: true,
                 decoration: const InputDecoration(hintText: 'Current password'),
               ),
-              if (method == 'totp') ...[
-                const SizedBox(height: 12),
-                TextField(
-                  controller: _codeController,
-                  keyboardType: TextInputType.number,
-                  maxLength: 6,
-                  decoration: const InputDecoration(
-                    hintText: 'Authenticator code',
-                    counterText: '',
-                  ),
-                ),
-              ],
+
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: _loading ? null : _disable,
@@ -322,30 +211,7 @@ class _TwoFactorScreenState extends ConsumerState<TwoFactorScreen> {
                   style: GoogleFonts.dmSans(
                       fontWeight: FontWeight.w700, fontSize: 18, color: AppColors.navy)),
               const SizedBox(height: 16),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: AppColors.cardShadowLight,
-                ),
-                child: ListTile(
-                  leading: Container(
-                    width: 44, height: 44,
-                    decoration: BoxDecoration(
-                      color: AppColors.navy.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(Icons.qr_code_rounded, color: AppColors.navy),
-                  ),
-                  title: Text('Authenticator App',
-                      style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
-                  subtitle: Text('Google Authenticator, Authy, etc.',
-                      style: GoogleFonts.inter(fontSize: 13, color: AppColors.textMuted)),
-                  trailing: const Icon(Icons.chevron_right_rounded),
-                  onTap: _loading ? null : _setupTOTP,
-                ),
-              ),
-              const SizedBox(height: 12),
+
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,

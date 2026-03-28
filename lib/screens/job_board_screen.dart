@@ -38,10 +38,12 @@ class _JobBoardScreenState extends ConsumerState<JobBoardScreen> {
     _fetchJobs();
     _scrollCtrl.addListener(_onScroll);
     _refreshTimer = Timer.periodic(const Duration(seconds: 45), (_) => _silentRefresh());
+    ref.read(_jobServiceProvider).initSocket(onNewJob: _silentRefresh);
   }
 
   @override
   void dispose() {
+    ref.read(_jobServiceProvider).disposeSocket();
     _refreshTimer?.cancel();
     _searchCtrl.dispose();
     _scrollCtrl.dispose();

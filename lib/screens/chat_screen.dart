@@ -79,13 +79,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           _socketConnecting = false;
 
           if (isActiveConvo) {
-            final exists = _messages.any((m) => m.id == msg.id);
+            final exists = _messages.any((m) => m.id == msg.id || (m.id.startsWith('opt-') && m.sender?.id == msg.sender?.id && m.content == msg.content));
             if (!exists) {
-              final cleaned = _messages.where((m) =>
-                  !(m.id.startsWith('opt-') &&
-                      m.sender?.id == msg.sender?.id &&
-                      m.content == msg.content)).toList();
-              _messages = [...cleaned, msg];
+              _messages = [..._messages, msg];
+            } else {
+              // Replace optimistic with real
+              _messages = _messages.map((m) => (m.id.startsWith('opt-') && m.sender?.id == msg.sender?.id && m.content == msg.content) ? msg : m).toList();
             }
           }
 
@@ -494,40 +493,40 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   ),
                 )
           : _conversations.isEmpty
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(color: AppColors.creamDark, shape: BoxShape.circle),
-                        child: const Icon(Icons.chat_bubble_outline_rounded, size: 36, color: AppColors.textMuted),
+              ? Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(children: [
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(color: AppColors.creamDark, shape: BoxShape.circle),
+                      child: const Icon(Icons.chat_bubble_outline_rounded, size: 36, color: AppColors.textMuted),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text('No conversations yet', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textBody)),
+                    const SizedBox(height: 6),
+                    Text(
+                      isClient
+                          ? 'Conversations will appear when applicants message you'
+                          : 'Apply to a job to start a conversation',
+                      style: const TextStyle(fontSize: 13, color: AppColors.textMuted),
+                      textAlign: TextAlign.center,
+                    ),
+                    const Spacer(),
+                    if (isClient)
+                      ElevatedButton.icon(
+                        onPressed: () => context.go('/dashboard'),
+                        icon: const Icon(Icons.dashboard_rounded, size: 18),
+                        label: const Text('Go to Dashboard'),
+                      )
+                    else
+                      ElevatedButton.icon(
+                        onPressed: () => context.go('/jobs'),
+                        icon: const Icon(Icons.work_outline_rounded, size: 18),
+                        label: const Text('Browse Jobs'),
                       ),
-                      const SizedBox(height: 16),
-                      const Text('No conversations yet', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textBody)),
-                      const SizedBox(height: 6),
-                      Text(
-                        isClient
-                            ? 'Conversations will appear when applicants message you'
-                            : 'Apply to a job to start a conversation',
-                        style: const TextStyle(fontSize: 13, color: AppColors.textMuted),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 20),
-                      if (isClient)
-                        ElevatedButton.icon(
-                          onPressed: () => context.go('/dashboard'),
-                          icon: const Icon(Icons.dashboard_rounded, size: 18),
-                          label: const Text('Go to Dashboard'),
-                        )
-                      else
-                        ElevatedButton.icon(
-                          onPressed: () => context.go('/jobs'),
-                          icon: const Icon(Icons.work_outline_rounded, size: 18),
-                          label: const Text('Browse Jobs'),
-                        ),
-                    ]),
-                  ),
+                    const SizedBox(height: 16),
+                  ]),
                 )
               : ListView.separated(
                   itemCount: _conversations.length,

@@ -69,7 +69,7 @@ TextStyle _label(double size, {Color color = _muted, FontWeight fw = FontWeight.
     GoogleFonts.inter(fontSize: size, color: color, fontWeight: fw);
 
 TextStyle _serif(double size, {Color color = _ink}) =>
-    GoogleFonts.dmSerifDisplay(fontSize: size, color: color);
+    GoogleFonts.inter(fontSize: size, color: color, fontWeight: FontWeight.w800);
 
 // ─────────────────────────────────────────────
 //  STUDENT HOME
@@ -172,8 +172,8 @@ class _StudentHomeState extends ConsumerState<_StudentHome> {
                               child: Center(
                                 child: Text(
                                   firstName.isNotEmpty ? firstName[0].toUpperCase() : '?',
-                                  style: GoogleFonts.dmSerifDisplay(
-                                      color: Colors.white, fontSize: 18),
+                                  style: GoogleFonts.inter(
+                                      fontWeight: FontWeight.w800, color: Colors.white, fontSize: 18),
                                 ),
                               ),
                             ),
@@ -402,7 +402,7 @@ class _ClientHomeState extends ConsumerState<_ClientHome> {
                               child: Center(
                                 child: Text(
                                   firstName.isNotEmpty ? firstName[0].toUpperCase() : '?',
-                                  style: GoogleFonts.dmSerifDisplay(color: Colors.white, fontSize: 18),
+                                  style: GoogleFonts.inter(fontWeight: FontWeight.w800, color: Colors.white, fontSize: 18),
                                 ),
                               ),
                             ),
@@ -549,7 +549,7 @@ class _StudentAppCardState extends State<_StudentAppCard> {
           Row(children: [
             Expanded(
               child: Text(job.title,
-                  style: GoogleFonts.dmSerifDisplay(fontSize: 16, color: _ink),
+                  style: GoogleFonts.inter(fontWeight: FontWeight.w800, fontSize: 16, color: _ink),
                   maxLines: 1, overflow: TextOverflow.ellipsis),
             ),
             const SizedBox(width: 8),
@@ -619,7 +619,7 @@ class _ClientJobCard extends StatelessWidget {
           Row(children: [
             Expanded(
               child: Text(job.title,
-                  style: GoogleFonts.dmSerifDisplay(fontSize: 16, color: _ink),
+                  style: GoogleFonts.inter(fontWeight: FontWeight.w800, fontSize: 16, color: _ink),
                   maxLines: 1, overflow: TextOverflow.ellipsis),
             ),
             const SizedBox(width: 8),
@@ -677,7 +677,7 @@ class _StatCell extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 18),
         child: Column(children: [
           Text(value,
-              style: GoogleFonts.dmSerifDisplay(fontSize: 26, color: c)),
+              style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w800, color: c)),
           const SizedBox(height: 2),
           Text(label, style: _label(10, fw: FontWeight.w600).copyWith(letterSpacing: 0.8)),
         ]),
@@ -759,7 +759,7 @@ class _EmptySlate extends StatelessWidget {
         borderRadius: BorderRadius.circular(4),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(label, style: GoogleFonts.dmSerifDisplay(fontSize: 17, color: _ink)),
+        Text(label, style: GoogleFonts.inter(fontSize: 17, fontWeight: FontWeight.w800, color: _ink)),
         const SizedBox(height: 6),
         Text(sub, style: _label(13, color: _muted)),
         const SizedBox(height: 16),

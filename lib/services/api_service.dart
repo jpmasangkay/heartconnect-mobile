@@ -67,6 +67,13 @@ class ApiService {
       if (e.response?.statusCode == 401) {
         return 'Session expired. Please log in again.';
       }
+      if (e.response?.statusCode == 429) {
+        final data = e.response?.data;
+        if (data is Map && data['message'] != null) {
+          return data['message'].toString();
+        }
+        return 'Too many attempts right now. Please wait a minute and try again.';
+      }
       final data = e.response?.data;
       if (data is Map) {
         if (data['errors'] is List) {

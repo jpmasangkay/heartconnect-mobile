@@ -150,52 +150,53 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               const SizedBox(height: 16),
             ],
 
-            // Avatar + identity
-            _Section(
-              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                AvatarCircle(user.initials, size: 56),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _editing
-                      ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          _Lbl('Full name'),
-                          const SizedBox(height: 6),
-                          TextField(controller: _nameCtrl),
-                          const SizedBox(height: 12),
-                          _Lbl('Bio'),
-                          const SizedBox(height: 6),
-                          TextField(controller: _bioCtrl, maxLines: 4,
-                              decoration: const InputDecoration(
-                                  hintText: 'Tell clients about yourself...',
-                                  alignLabelWithHint: true)),
-                        ])
-                      : Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text(user.name,
-                              style: const TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.navy)),
-                          const SizedBox(height: 2),
-                          Text(user.role.toUpperCase(),
-                              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600,
-                                  letterSpacing: 1, color: AppColors.textMuted)),
-                          if ((user.bio ?? '').isNotEmpty) ...[
-                            const SizedBox(height: 8),
-                            Text(user.bio!,
-                                style: const TextStyle(fontSize: 13, color: AppColors.textBody, height: 1.5)),
-                          ] else
-                            const Padding(
-                              padding: EdgeInsets.only(top: 8),
-                              child: Text('No bio added yet.',
-                                  style: TextStyle(fontSize: 13, color: AppColors.textMuted, fontStyle: FontStyle.italic)),
-                            ),
-                        ]),
-                ),
-              ]),
-            ),
-            const SizedBox(height: 12),
-
-            // Details
+            // Unified Profile Card (Avatar + Details + Skills)
             _Section(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  AvatarCircle(user.initials, size: 56),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _editing
+                        ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            _Lbl('Full name'),
+                            const SizedBox(height: 6),
+                            TextField(controller: _nameCtrl),
+                            const SizedBox(height: 12),
+                            _Lbl('Bio'),
+                            const SizedBox(height: 6),
+                            TextField(controller: _bioCtrl, maxLines: 4,
+                                decoration: const InputDecoration(
+                                    hintText: 'Tell clients about yourself...',
+                                    alignLabelWithHint: true)),
+                          ])
+                        : Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Text(user.name,
+                                style: const TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.navy)),
+                            const SizedBox(height: 2),
+                            Text(user.role.toUpperCase(),
+                                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600,
+                                    letterSpacing: 1, color: AppColors.textMuted)),
+                            if ((user.bio ?? '').isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              Text(user.bio!,
+                                  style: const TextStyle(fontSize: 13, color: AppColors.textBody, height: 1.5)),
+                            ] else
+                              const Padding(
+                                padding: EdgeInsets.only(top: 8),
+                                child: Text('No bio added yet.',
+                                    style: TextStyle(fontSize: 13, color: AppColors.textMuted, fontStyle: FontStyle.italic)),
+                              ),
+                          ]),
+                  ),
+                ]),
+                
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20),
+                  child: Divider(height: 1),
+                ),
+
                 const SectionLabel('Details'),
                 const SizedBox(height: 14),
                 if (_editing) ...[
@@ -241,13 +242,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     const Text('No additional details added.',
                         style: TextStyle(fontSize: 13, color: AppColors.textMuted, fontStyle: FontStyle.italic)),
                 ],
-              ]),
-            ),
-            const SizedBox(height: 12),
 
-            // Skills
-            _Section(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                // ── Skills ──
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  child: Divider(height: 1),
+                ),
                 const SectionLabel('Skills'),
                 const SizedBox(height: 12),
                 if (_editing) ...[

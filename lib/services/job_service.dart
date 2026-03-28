@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'package:flutter/foundation.dart';
+import 'package:socket_io_client/socket_io_client.dart' as io;
 import '../models/job.dart';
 import 'api_service.dart';
 
@@ -9,6 +12,8 @@ int _readInt(dynamic v, [int fallback = 0]) {
 }
 
 class JobService extends ApiService {
+  io.Socket? _socket;
+  bool _disposed = false;
   Map<String, dynamic> _unwrapJobPayload(dynamic raw) {
     if (raw is Map<String, dynamic>) {
       if (raw['_id'] != null || raw['id'] != null) return raw;
@@ -113,5 +118,52 @@ class JobService extends ApiService {
     } catch (_) {
       return [];
     }
+  }
+
+  // ── Socket ───────────────────────────────────────────────────────────────
+
+  Future<void> initSocket({
+    required VoidCallback onNewJob,
+  }) async {
+    final token = await storage.read(key: 'jwt_token');
+    if (token == null || _disposed) return;
+
+    _socket?.disconnect();
+    _socket?.dispose();
+
+    _socket = io.io(
+      ApiService.socketUrl,
+      io.OptionBuilder()
+          .setTransports(['websocket', 'polling'])
+          .disableAutoConnect()
+          .enableReconnection()
+          .setReconnectionAttempts(999)
+          .setReconnectionDelay(300)
+          .setReconnectionDelayMax(8000)
+          .setTimeout(8000)
+          .setAuth({'token': token, 'platform': ApiService.platform})
+          .build(),
+    );
+
+    _socket!.onConnect((_) {
+      debugPrint('Job Socket connected');
+    });
+
+    _socket!.on('job:new', (_) {
+      onNewJob();
+    });
+    
+    _socket!.on('new_job', (_) {
+      onNewJob();
+    });
+
+    _socket!.connect();
+  }
+
+  void disposeSocket() {
+    _disposed = true;
+    _socket?.disconnect();
+    _socket?.dispose();
+    _socket = null;
   }
 }

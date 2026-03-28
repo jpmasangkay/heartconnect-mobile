@@ -256,8 +256,7 @@ class _NotifItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 52,
+    return Expanded(
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
@@ -297,7 +296,16 @@ class _NotifItem extends StatelessWidget {
             const SizedBox(height: 3),
             Text('Notifs',
                 style: GoogleFonts.inter(fontSize: 10, color: _muted, fontWeight: FontWeight.w400)),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              height: 2,
+              width: 0,
+              decoration: BoxDecoration(
+                color: _ink,
+                borderRadius: BorderRadius.circular(1),
+              ),
+            ),
           ],
         ),
       ),
