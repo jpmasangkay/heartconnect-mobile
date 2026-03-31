@@ -2,6 +2,8 @@ import '../models/job.dart';
 import 'api_service.dart';
 
 class SavedJobService extends ApiService {
+  SavedJobService._();
+  static final SavedJobService instance = SavedJobService._();
   Future<({List<Job> data, int total, int pages})> getSavedJobs({
     int page = 1,
     int limit = 20,

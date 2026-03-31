@@ -13,12 +13,13 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
-  final _service = NotificationService();
+  final _service = NotificationService.instance;
   final _notifications = <app.AppNotification>[];
   bool _loading = true;
   int _page = 1;
   int _totalPages = 1;
   bool _loadingMore = false;
+  bool _deleting = false;
   final _scrollController = ScrollController();
 
   @override
@@ -88,7 +89,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           }
         });
       }
-    } catch (_) {}
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(_service.extractError(e))),
+        );
+      }
+    }
   }
 
   Future<void> _markRead(int index) async {
@@ -101,7 +108,68 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           _notifications[index] = notif.copyWith(read: true);
         });
       }
-    } catch (_) {}
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(_service.extractError(e))),
+        );
+      }
+    }
+  }
+
+  Future<void> _deleteAllRead() async {
+    final readCount = _notifications.where((n) => n.read).length;
+    if (readCount == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No read notifications to delete')),
+      );
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete read notifications'),
+        content: Text(
+          'This will permanently delete $readCount read '
+          'notification${readCount == 1 ? '' : 's'}. Continue?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    setState(() => _deleting = true);
+    try {
+      final deleted = await _service.deleteReadNotifications();
+      if (mounted) {
+        setState(() {
+          _notifications.removeWhere((n) => n.read);
+          _deleting = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Deleted $deleted notification${deleted == 1 ? '' : 's'}')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _deleting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(_service.extractError(e))),
+        );
+      }
+    }
   }
 
   IconData _typeIcon(String type) {
@@ -156,17 +224,60 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     }
   }
 
+  /// Routes that live inside the StatefulShellRoute and MUST use `go()`
+  /// instead of `push()` so the MainScreen shell + bottom nav stay visible.
+  static const _shellPaths = {'/dashboard', '/jobs', '/chat', '/profile'};
+
   void _onTap(app.AppNotification notif, int index) {
     _markRead(index);
-    final link = notif.link;
-    if (link != null && link.isNotEmpty) {
-      context.push(link);
+
+    // Determine the navigation target
+    String? target = notif.link;
+
+    // If link is a full URL, extract just the path
+    if (target != null && target.isNotEmpty) {
+      try {
+        final uri = Uri.parse(target);
+        if (uri.hasScheme) {
+          target = uri.path;
+        }
+      } catch (_) {}
+    }
+
+    // Strip trailing slashes (e.g. "/" → "")
+    if (target != null) {
+      target = target.replaceAll(RegExp(r'/+$'), '');
+    }
+
+    // Fall back to relatedJob if link is missing/empty
+    if ((target == null || target.isEmpty) && notif.relatedJob != null && notif.relatedJob!.isNotEmpty) {
+      target = '/jobs/${notif.relatedJob}';
+    }
+
+    // Nothing to navigate to
+    if (target == null || target.isEmpty) {
+      debugPrint('Notification tap → no link or relatedJob to navigate to');
+      return;
+    }
+
+    debugPrint('Notification tap → navigating to: $target');
+    try {
+      // Shell routes must use go() so the MainScreen wrapper stays intact.
+      // Detail routes (e.g. /jobs/abc123) use push() to overlay.
+      if (_shellPaths.contains(target)) {
+        context.go(target);
+      } else {
+        context.push(target);
+      }
+    } catch (e) {
+      debugPrint('Navigation error on notification tap: $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final hasUnread = _notifications.any((n) => !n.read);
+    final hasRead = _notifications.any((n) => n.read);
 
     return Scaffold(
       appBar: AppBar(
@@ -181,6 +292,32 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     fontWeight: FontWeight.w600,
                     color: AppColors.accent,
                   )),
+            ),
+          if (_notifications.isNotEmpty)
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert_rounded),
+              onSelected: (value) {
+                if (value == 'delete_read') _deleteAllRead();
+              },
+              itemBuilder: (_) => [
+                PopupMenuItem(
+                  value: 'delete_read',
+                  enabled: hasRead && !_deleting,
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete_sweep_rounded,
+                          size: 20,
+                          color: hasRead ? Colors.red : AppColors.textMuted),
+                      const SizedBox(width: 10),
+                      Text('Delete all read',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            color: hasRead ? Colors.red : AppColors.textMuted,
+                          )),
+                    ],
+                  ),
+                ),
+              ],
             ),
         ],
       ),
@@ -255,7 +392,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                     Text(_timeAgo(n.createdAt),
                                         style: GoogleFonts.inter(
                                           fontSize: 11,
-                                          color: AppColors.textMuted.withValues(alpha: 0.1),
+                                          color: AppColors.textMuted.withValues(alpha: 0.6),
                                         )),
                                   ],
                                 ),

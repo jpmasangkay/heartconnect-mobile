@@ -33,7 +33,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   Future<void> _load() async {
     try {
-      final user = await AuthService().getUser(widget.userId);
+      final user = await AuthService.instance.getUser(widget.userId);
       if (mounted) setState(() { _profile = user; _loading = false; });
       _loadReviews();
       _checkBlocked();
@@ -44,7 +44,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   Future<void> _loadReviews() async {
     try {
-      final result = await ReviewService().getUserReviews(widget.userId);
+      final result = await ReviewService.instance.getUserReviews(widget.userId);
       if (mounted) {
         setState(() {
           _reviews = result.data;
@@ -56,7 +56,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   Future<void> _checkBlocked() async {
     try {
-      final blocked = await BlockService().checkBlocked(widget.userId);
+      final blocked = await BlockService.instance.checkBlocked(widget.userId);
       if (mounted) setState(() => _isBlocked = blocked);
     } catch (_) {}
   }
@@ -79,7 +79,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
     if (confirm != true) return;
     try {
-      await BlockService().blockUser(widget.userId);
+      await BlockService.instance.blockUser(widget.userId);
       if (mounted) {
         setState(() => _isBlocked = true);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -91,7 +91,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   Future<void> _unblockUser() async {
     try {
-      await BlockService().unblockUser(widget.userId);
+      await BlockService.instance.unblockUser(widget.userId);
       if (mounted) {
         setState(() => _isBlocked = false);
         ScaffoldMessenger.of(context).showSnackBar(

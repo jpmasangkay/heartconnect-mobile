@@ -77,7 +77,7 @@ class _PostJobScreenState extends ConsumerState<PostJobScreen> {
     if (!mounted) return;
     setState(() { _loading = true; _error = null; });
     try {
-      final job = await JobService().createJob({
+      final job = await JobService.instance.createJob({
         'title': title,
         'description': desc,
         'category': _skills.first,
@@ -87,10 +87,10 @@ class _PostJobScreenState extends ConsumerState<PostJobScreen> {
         'skills': _skills,
       });
       if (!mounted) return;
-      context.go('/jobs/${job.id}');
+      context.push('/jobs/${job.id}');
     } catch (e) {
       if (!mounted) return;
-      setState(() { _error = JobService().extractError(e); });
+      setState(() { _error = JobService.instance.extractError(e); });
     } finally {
       if (mounted) {
         setState(() => _loading = false);

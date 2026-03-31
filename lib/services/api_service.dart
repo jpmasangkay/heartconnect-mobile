@@ -19,40 +19,52 @@ class ApiService {
 
   static String get socketUrl => AppConfig.socketUrl;
 
-  late final Dio dio;
-  final FlutterSecureStorage storage = const FlutterSecureStorage();
+  static final FlutterSecureStorage _sharedStorage = const FlutterSecureStorage();
+  static String? _cachedToken;
+  
+  static final Dio _sharedDio = Dio(BaseOptions(
+    baseUrl: baseUrl,
+    connectTimeout: const Duration(seconds: 10),
+    receiveTimeout: const Duration(seconds: 10),
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Platform': platform,
+    },
+  ))..interceptors.add(InterceptorsWrapper(
+    onRequest: (options, handler) async {
+      _cachedToken ??= await _sharedStorage.read(key: 'jwt_token');
+      if (_cachedToken != null) {
+        options.headers['Authorization'] = 'Bearer $_cachedToken';
+      }
+      return handler.next(options);
+    },
+    onError: (DioException e, handler) {
+      if (e.response?.statusCode == 401) {
+        debugPrint('API 401: token expired or invalidated');
+        clearToken();
+        onAuthExpired?.call();
+      }
+      return handler.next(e);
+    },
+  ));
 
-  ApiService() {
-    dio = Dio(BaseOptions(
-      baseUrl: baseUrl,
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 10),
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Platform': platform,
-      },
-    ));
+  Dio get dio => _sharedDio;
+  FlutterSecureStorage get storage => _sharedStorage;
 
-    dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        final token = await storage.read(key: 'jwt_token');
-        if (token != null) {
-          options.headers['Authorization'] = 'Bearer $token';
-        }
-        return handler.next(options);
-      },
-      onError: (DioException e, handler) {
-        if (e.response?.statusCode == 401) {
-          debugPrint('API 401: token expired or invalidated');
-          storage.delete(key: 'jwt_token');
-          onAuthExpired?.call();
-        }
-        return handler.next(e);
-      },
-    ));
+  static Future<String?> getToken() async {
+    _cachedToken ??= await _sharedStorage.read(key: 'jwt_token');
+    return _cachedToken;
   }
 
-  Future<String?> getToken() => storage.read(key: 'jwt_token');
+  static Future<void> setToken(String token) async {
+    _cachedToken = token;
+    await _sharedStorage.write(key: 'jwt_token', value: token);
+  }
+
+  static Future<void> clearToken() async {
+    _cachedToken = null;
+    await _sharedStorage.delete(key: 'jwt_token');
+  }
 
   String extractError(dynamic e) {
     if (e is DioException) {

@@ -2,6 +2,8 @@ import '../models/application.dart';
 import 'api_service.dart';
 
 class ApplicationService extends ApiService {
+  ApplicationService._();
+  static final ApplicationService instance = ApplicationService._();
   Future<Application> apply(
       String jobId, String coverLetter, double proposedRate) async {
     final res = await dio.post('/jobs/$jobId/applications', data: {

@@ -4,6 +4,9 @@ import 'api_service.dart';
 
 /// Registers and logs in via JSON body; persists Bearer JWT from the response.
 class AuthService extends ApiService {
+  AuthService._();
+  static final AuthService instance = AuthService._();
+
   /// Returns either a normal login result OR a 2FA challenge.
   Future<({String? token, User? user, bool requires2FA, String? tempToken, String? twoFactorMethod})> login(
       String email, String password) async {
@@ -26,7 +29,7 @@ class AuthService extends ApiService {
     }
 
     final token = data['token'] as String;
-    await storage.write(key: 'jwt_token', value: token);
+    await ApiService.setToken(token);
     return (
       token: token,
       user: User.fromJson(data['user'] as Map<String, dynamic>),
@@ -53,12 +56,12 @@ class AuthService extends ApiService {
     });
     final data = res.data as Map<String, dynamic>;
     final token = data['token'] as String;
-    await storage.write(key: 'jwt_token', value: token);
+    await ApiService.setToken(token);
     return (token: token, user: User.fromJson(data['user'] as Map<String, dynamic>));
   }
 
   Future<User?> getCurrentUser() async {
-    final token = await storage.read(key: 'jwt_token');
+    final token = await ApiService.getToken();
     if (token == null) return null;
     try {
       final res = await dio.get('/auth/me');
@@ -70,7 +73,7 @@ class AuthService extends ApiService {
       return null;
     } catch (e) {
       if (e is DioException && e.response?.statusCode == 401) {
-        await storage.delete(key: 'jwt_token');
+        await ApiService.clearToken();
       }
       return null;
     }
@@ -90,7 +93,7 @@ class AuthService extends ApiService {
     try {
       await dio.post('/auth/logout');
     } catch (_) {}
-    await storage.delete(key: 'jwt_token');
+    await ApiService.clearToken();
   }
 
   Future<String> forgotPassword(String email) async {

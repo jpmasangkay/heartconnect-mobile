@@ -3,6 +3,8 @@ import 'package:dio/dio.dart';
 import 'api_service.dart';
 
 class VerificationService extends ApiService {
+  VerificationService._();
+  static final VerificationService instance = VerificationService._();
   Future<Map<String, dynamic>> requestSchoolEmail() async {
     final res = await dio.post('/verification/request', data: {
       'method': 'school_email',

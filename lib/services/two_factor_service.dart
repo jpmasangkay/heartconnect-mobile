@@ -1,6 +1,8 @@
 import 'api_service.dart';
 
 class TwoFactorService extends ApiService {
+  TwoFactorService._();
+  static final TwoFactorService instance = TwoFactorService._();
   /// Set up 2FA. [method] is 'totp' or 'email'.
   /// For TOTP, returns { secret, qrCodeUrl, method }.
   /// For email, returns { message, method }.

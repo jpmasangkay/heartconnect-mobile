@@ -44,7 +44,7 @@ class _EditJobScreenState extends State<EditJobScreen> {
 
   Future<void> _load() async {
     try {
-      final job = await JobService().getJob(widget.jobId);
+      final job = await JobService.instance.getJob(widget.jobId);
       setState(() {
         _titleCtrl.text = job.title;
         _descCtrl.text = job.description;
@@ -109,12 +109,12 @@ class _EditJobScreenState extends State<EditJobScreen> {
         // Keep in sync with create-job behavior so APIs that tie category to skills persist updates.
         'category': _skills.first,
       };
-      await JobService().updateJob(widget.jobId, payload);
+      await JobService.instance.updateJob(widget.jobId, payload);
       if (!mounted) return;
       context.go('/jobs/${widget.jobId}', extra: DateTime.now().millisecondsSinceEpoch);
     } catch (e) {
       if (mounted) {
-        setState(() { _error = JobService().extractError(e); _saving = false; });
+        setState(() { _error = JobService.instance.extractError(e); _saving = false; });
       }
     }
   }
@@ -122,7 +122,7 @@ class _EditJobScreenState extends State<EditJobScreen> {
   Future<void> _delete() async {
     setState(() => _deleting = true);
     try {
-      await JobService().deleteJob(widget.jobId);
+      await JobService.instance.deleteJob(widget.jobId);
       if (mounted) context.go('/dashboard');
     } catch (_) {
       if (mounted) context.go('/dashboard');

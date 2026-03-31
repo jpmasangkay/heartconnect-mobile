@@ -34,82 +34,89 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
   String? _formError;
   bool _applied = false;
 
-  Timer? _refreshTimer;
-
   @override
   void initState() {
     super.initState();
     _load();
-    _refreshTimer = Timer.periodic(const Duration(seconds: 30), (_) => _silentRefresh());
   }
 
   @override
   void dispose() {
-    _refreshTimer?.cancel();
     _coverCtrl.dispose();
     _rateCtrl.dispose();
     super.dispose();
   }
 
-  Future<void> _silentRefresh() async {
-    if (_loading) return;
-    final auth = ref.read(authProvider);
-    try {
-      final jobSvc = JobService();
-      final appSvc = ApplicationService();
-      final job = await jobSvc.getJob(widget.jobId);
-      List<Application> apps = _applications;
-      Application? mine = _myApplication;
-      if (auth.user?.role == 'client') {
-        apps = await appSvc.getForJob(widget.jobId);
-      } else if (auth.user?.role == 'student' && mine == null && !_applied) {
-        final myApps = await appSvc.getMyApplications();
-        mine = myApps.where((a) => a.job?.id == widget.jobId).firstOrNull;
-      }
-      if (mounted) {
-        setState(() { _job = job; _applications = apps; if (mine != null) _myApplication = mine; });
-      }
-    } catch (_) {}
-  }
-
   Future<void> _load() async {
     final auth = ref.read(authProvider);
-    try {
-      final jobSvc = JobService();
-      final appSvc = ApplicationService();
-      final results = await Future.wait([
-        jobSvc.getJob(widget.jobId),
-        appSvc.getForJob(widget.jobId),
-        if (auth.user?.role == 'student') appSvc.getMyApplications(),
-        ReviewService().getJobReviews(widget.jobId),
-      ]);
-      final job = results[0] as Job;
-      List<Application> apps = [];
-      Application? mine;
-      List<Review> reviews = [];
-      if (auth.user?.role == 'client') {
-        apps = results[1] as List<Application>;
-        reviews = results.last as List<Review>;
-      } else if (auth.user?.role == 'student') {
-        final myApps = results[2] as List<Application>;
-        mine = myApps.where((a) => a.job?.id == widget.jobId).firstOrNull;
-        reviews = results.last as List<Review>;
+    final jobSvc = JobService.instance;
+    final appSvc = ApplicationService.instance;
+
+    // Fetch the job itself – retry once after a short delay if it fails
+    // (handles the race where the backend hasn't committed the new doc yet).
+    Job? job;
+    for (var attempt = 0; attempt < 2; attempt++) {
+      try {
+        job = await jobSvc.getJob(widget.jobId);
+        break;
+      } catch (e) {
+        debugPrint('getJob attempt $attempt failed: $e');
+        if (attempt == 0) {
+          await Future.delayed(const Duration(milliseconds: 600));
+        }
       }
-      // Determine if current user already left a review for this job
-      final myId = auth.user?.id;
-      final alreadyReviewed = reviews.any((r) => r.reviewer?.id == myId);
-      if (mounted) {
-        setState(() {
-          _job = job;
-          _applications = apps;
-          _myApplication = mine;
-          _reviews = reviews;
-          _hasReviewed = alreadyReviewed;
-          _loading = false;
-        });
-      }
-    } catch (_) {
+    }
+
+    if (job == null) {
       if (mounted) setState(() => _loading = false);
+      return;
+    }
+
+    // Fetch auxiliary data in parallel so a failure in one doesn't
+    // prevent the job from rendering.
+    final userRole = auth.user?.role;
+    
+    final results = await Future.wait([
+      if (userRole == 'client')
+        appSvc.getForJob(widget.jobId).catchError((e) {
+          debugPrint('getForJob failed: $e');
+          return <Application>[];
+        })
+      else
+        Future.value(<Application>[]),
+        
+      if (userRole == 'student')
+        appSvc.getMyApplications().catchError((e) {
+          debugPrint('getMyApplications failed: $e');
+          return <Application>[];
+        })
+      else
+        Future.value(<Application>[]),
+        
+      ReviewService.instance.getJobReviews(widget.jobId).catchError((e) {
+        debugPrint('getJobReviews failed: $e');
+        return <Review>[];
+      }),
+    ]);
+
+    final apps = results[0] as List<Application>;
+    final myApps = results[1] as List<Application>;
+    final reviews = results[2] as List<Review>;
+    
+    final mine = myApps.where((a) => a.job?.id == widget.jobId).firstOrNull;
+
+    // Determine if current user already left a review for this job
+    final myId = auth.user?.id;
+    final alreadyReviewed = reviews.any((r) => r.reviewer?.id == myId);
+    if (mounted) {
+      setState(() {
+        _job = job;
+        _applications = apps;
+        _myApplication = mine;
+        _reviews = reviews;
+        _hasReviewed = alreadyReviewed;
+        _loading = false;
+      });
     }
   }
 
@@ -119,28 +126,28 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
     if (rate == null || rate <= 0) { setState(() => _formError = 'Enter a valid proposed rate'); return; }
     setState(() { _applying = true; _formError = null; });
     try {
-      final app = await ApplicationService().apply(widget.jobId, _coverCtrl.text.trim(), rate);
+      final app = await ApplicationService.instance.apply(widget.jobId, _coverCtrl.text.trim(), rate);
       setState(() { _myApplication = app; _applied = true; _applying = false; });
     } catch (e) {
-      setState(() { _formError = ApplicationService().extractError(e); _applying = false; });
+      setState(() { _formError = ApplicationService.instance.extractError(e); _applying = false; });
     }
   }
 
   Future<void> _updateStatus(String appId, String status) async {
     try {
-      final updated = await ApplicationService().updateStatus(appId, status);
+      final updated = await ApplicationService.instance.updateStatus(appId, status);
       setState(() { _applications = _applications.map((a) => a.id == appId ? updated : a).toList(); });
     } catch (_) {}
   }
 
   Future<void> _messageApplicant(String applicantId) async {
     try {
-      final convo = await ChatService().getOrCreate(widget.jobId, applicantId);
+      final convo = await ChatService.instance.getOrCreate(widget.jobId, applicantId);
       if (mounted) context.push('/chat/${convo.id}');
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(ChatService().extractError(e))),
+        SnackBar(content: Text(ChatService.instance.extractError(e))),
       );
     }
   }
@@ -148,7 +155,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
   Future<void> _withdraw() async {
     if (_myApplication == null) return;
     try {
-      final updated = await ApplicationService().withdraw(_myApplication!.id);
+      final updated = await ApplicationService.instance.withdraw(_myApplication!.id);
       setState(() => _myApplication = updated);
     } catch (_) {}
   }

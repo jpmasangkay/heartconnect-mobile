@@ -43,7 +43,7 @@ class _ReviewDialogState extends State<ReviewDialog> {
       _error = null;
     });
     try {
-      await ReviewService().createReview(
+      await ReviewService.instance.createReview(
         jobId: widget.job.id,
         revieweeId: widget.reviewee.id,
         rating: _rating,

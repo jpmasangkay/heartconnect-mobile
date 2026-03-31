@@ -84,35 +84,24 @@ class _StudentHome extends ConsumerStatefulWidget {
 class _StudentHomeState extends ConsumerState<_StudentHome> {
   List<Application> _apps = [];
   bool _loading = true;
-  Timer? _timer;
-
   @override
   void initState() {
     super.initState();
     _load();
-    _timer = Timer.periodic(const Duration(seconds: 30), (_) => _refresh());
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
     super.dispose();
   }
 
   Future<void> _load() async {
     try {
-      final apps = await ApplicationService().getMyApplications();
+      final apps = await ApplicationService.instance.getMyApplications();
       if (mounted) setState(() { _apps = apps.where((a) => a.job != null).toList(); _loading = false; });
     } catch (_) {
       if (mounted) setState(() => _loading = false);
     }
-  }
-
-  Future<void> _refresh() async {
-    try {
-      final apps = await ApplicationService().getMyApplications();
-      if (mounted) setState(() => _apps = apps.where((a) => a.job != null).toList());
-    } catch (_) {}
   }
 
   @override
@@ -292,35 +281,24 @@ class _ClientHome extends ConsumerStatefulWidget {
 class _ClientHomeState extends ConsumerState<_ClientHome> {
   List<Job> _jobs = [];
   bool _loading = true;
-  Timer? _timer;
-
   @override
   void initState() {
     super.initState();
     _load();
-    _timer = Timer.periodic(const Duration(seconds: 30), (_) => _refresh());
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
     super.dispose();
   }
 
   Future<void> _load() async {
     try {
-      final jobs = await JobService().getMyJobs();
+      final jobs = await JobService.instance.getMyJobs();
       if (mounted) setState(() { _jobs = jobs; _loading = false; });
     } catch (_) {
       if (mounted) setState(() => _loading = false);
     }
-  }
-
-  Future<void> _refresh() async {
-    try {
-      final jobs = await JobService().getMyJobs();
-      if (mounted) setState(() => _jobs = jobs);
-    } catch (_) {}
   }
 
   Job _patchStatus(String id, String status) =>
@@ -333,14 +311,14 @@ class _ClientHomeState extends ConsumerState<_ClientHome> {
 
   Future<void> _closeJob(String id) async {
     try {
-      await JobService().closeJob(id);
+      await JobService.instance.closeJob(id);
       setState(() => _jobs = _jobs.map((j) => j.id == id ? _patchStatus(id, 'closed') : j).toList());
     } catch (_) {}
   }
 
   Future<void> _completeJob(String id) async {
     try {
-      await JobService().completeJob(id);
+      await JobService.instance.completeJob(id);
       setState(() => _jobs = _jobs.map((j) => j.id == id ? _patchStatus(id, 'completed') : j).toList());
     } catch (_) {}
   }
@@ -515,12 +493,12 @@ class _StudentAppCardState extends State<_StudentAppCard> {
     final job = widget.app.job!;
     setState(() => _opening = true);
     try {
-      final convo = await ChatService().getOrCreate(job.id, job.effectiveClientId);
+      final convo = await ChatService.instance.getOrCreate(job.id, job.effectiveClientId);
       if (mounted) context.push('/chat/${convo.id}');
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(ChatService().extractError(e))),
+        SnackBar(content: Text(ChatService.instance.extractError(e))),
       );
     } finally {
       if (mounted) setState(() => _opening = false);

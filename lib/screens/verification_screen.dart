@@ -13,7 +13,7 @@ class VerificationScreen extends StatefulWidget {
 }
 
 class _VerificationScreenState extends State<VerificationScreen> {
-  final _service = VerificationService();
+  final _service = VerificationService.instance;
   String _status = 'none'; // none, pending, verified, rejected
   String? _method;
   bool _loading = true;

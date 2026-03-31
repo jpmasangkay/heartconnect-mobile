@@ -1,6 +1,8 @@
 import 'api_service.dart';
 
 class ReportService extends ApiService {
+  ReportService._();
+  static final ReportService instance = ReportService._();
   Future<void> submitReport({
     required String targetType,
     required String targetId,

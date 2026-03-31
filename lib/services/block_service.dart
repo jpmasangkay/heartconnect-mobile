@@ -2,6 +2,8 @@ import '../models/user.dart';
 import 'api_service.dart';
 
 class BlockService extends ApiService {
+  BlockService._();
+  static final BlockService instance = BlockService._();
   Future<void> blockUser(String userId) async {
     await dio.post('/blocks/$userId');
   }

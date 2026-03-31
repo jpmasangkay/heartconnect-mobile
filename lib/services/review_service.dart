@@ -4,6 +4,8 @@ import '../models/user.dart';
 import 'api_service.dart';
 
 class ReviewService extends ApiService {
+  ReviewService._();
+  static final ReviewService instance = ReviewService._();
   Future<Review> createReview({
     required String jobId,
     required String revieweeId,

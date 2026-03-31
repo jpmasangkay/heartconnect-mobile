@@ -13,7 +13,7 @@ class TwoFactorScreen extends ConsumerStatefulWidget {
 }
 
 class _TwoFactorScreenState extends ConsumerState<TwoFactorScreen> {
-  final _service = TwoFactorService();
+  final _service = TwoFactorService.instance;
   bool _loading = false;
   String? _error;
   String? _success;
@@ -26,8 +26,6 @@ class _TwoFactorScreenState extends ConsumerState<TwoFactorScreen> {
     _passwordController.dispose();
     super.dispose();
   }
-
-  String? get _currentMethod => ref.read(authProvider).user?.twoFactorMethod;
 
 
 

@@ -32,22 +32,19 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final _inputCtrl = TextEditingController();
   final _scrollCtrl = ScrollController();
   Timer? _typingTimer;
-  Timer? _refreshTimer;
   DateTime? _lastTypingEmit;
 
   @override
   void initState() {
     super.initState();
-    _chat = ChatService();
+    _chat = ChatService.instance;
     _loadConversations();
     _initSocket();
-    _refreshTimer = Timer.periodic(const Duration(seconds: 30), (_) => _syncConversations());
   }
 
   @override
   void dispose() {
     _typingTimer?.cancel();
-    _refreshTimer?.cancel();
     _inputCtrl.dispose();
     _scrollCtrl.dispose();
     _chat.disposeSocket();
@@ -58,7 +55,27 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     try {
       final convs = await _chat.getConversations();
       if (!mounted) return;
-      setState(() { _conversations = convs; _convoLoadError = null; });
+      setState(() {
+        _conversations = convs;
+        _convoLoadError = null;
+        // If the active conversation was deleted remotely (by the other party
+        // or from another device), clear it so the message pane doesn't linger.
+        if (_active != null && !convs.any((c) => c.id == _active!.id)) {
+          _active = null;
+          _messages = [];
+          // Deep-linked route: navigate away since there is nothing to show.
+          if (widget.conversationId != null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted) return;
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/chat');
+              }
+            });
+          }
+        }
+      });
       for (final c in convs) {
         _chat.joinRoom(c.id);
       }
@@ -376,8 +393,34 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         final deletedId = _active!.id;
         await _chat.deleteConversation(deletedId);
         _chat.leaveRoom(deletedId);
-        if (mounted) setState(() { _conversations = _conversations.where((c) => c.id != deletedId).toList(); _active = null; _messages = []; });
-      } catch (_) {}
+        if (!mounted) return;
+        setState(() {
+          _conversations = _conversations.where((c) => c.id != deletedId).toList();
+          _active = null;
+          _messages = [];
+        });
+        // If opened from a deep-link (/chat/:id), navigate back to the chat list.
+        if (widget.conversationId != null) {
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go('/chat');
+          }
+        }
+      } catch (_) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: const Text('Failed to delete conversation. Please try again.'),
+              behavior: SnackBarBehavior.floating,
+              margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              duration: const Duration(seconds: 3),
+            ),
+          );
+      }
     }
   }
 

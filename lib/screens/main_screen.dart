@@ -7,6 +7,9 @@ import 'package:google_fonts/google_fonts.dart';
 import '../providers/auth_provider.dart';
 import '../services/chat_service.dart';
 import '../services/notification_service.dart';
+import '../services/notification_socket_service.dart';
+import '../services/push_notification_service.dart';
+import '../models/notification.dart' as app;
 
 const _ink = Color(0xFF1C3A28);
 const _parchment = Color(0xFFF8F5EE);
@@ -25,29 +28,128 @@ class MainScreen extends ConsumerStatefulWidget {
 class _MainScreenState extends ConsumerState<MainScreen> {
   int _unreadChat = 0;
   int _unreadNotif = 0;
-  Timer? _timer;
+  final _notifService = NotificationService.instance;
+  final _notifSocket = NotificationSocketService.instance;
+  final _push = PushNotificationService.instance;
+
+  /// Track IDs of notifications we've already shown a push for,
+  /// so we don't spam the user on every poll cycle.
+  final Set<String> _shownNotifIds = {};
+  bool _firstFetch = true;
 
   @override
   void initState() {
     super.initState();
+    _initNotifSocket();
     _fetch();
-    _timer = Timer.periodic(const Duration(seconds: 15), (_) => _fetch());
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _notifSocket.disposeSocket();
     super.dispose();
   }
 
+  /// Connect to Socket.IO for instant notification delivery.
+  Future<void> _initNotifSocket() async {
+    try {
+      await _notifSocket.initSocket(
+        onNotification: _onRealtimeNotification,
+        onUnreadCount: (count) {
+          if (mounted && count != _unreadNotif) {
+            setState(() => _unreadNotif = count);
+          }
+        },
+        onConnect: () {
+          debugPrint('Notification socket ready — real-time push active');
+        },
+      );
+    } catch (e) {
+      debugPrint('Failed to init notification socket: $e');
+    }
+  }
+
+  /// Called instantly when the server emits `notification:new`.
+  void _onRealtimeNotification(app.AppNotification notif) {
+    if (!mounted) return;
+
+    // Show native push if we haven't already
+    if (!_shownNotifIds.contains(notif.id)) {
+      _shownNotifIds.add(notif.id);
+      _push.showNotification(
+        id: notif.id.hashCode,
+        title: notif.title,
+        body: notif.message,
+        payload: notif.link ?? '/notifications',
+      );
+    }
+
+    // Bump badge count immediately
+    setState(() => _unreadNotif = _unreadNotif + 1);
+
+    // Keep the set from growing unbounded
+    if (_shownNotifIds.length > 200) {
+      final toRemove = _shownNotifIds.take(_shownNotifIds.length - 100).toList();
+      _shownNotifIds.removeAll(toRemove);
+    }
+  }
+
+  /// Fallback HTTP polling for badge count accuracy.
   Future<void> _fetch() async {
+    // ── Chat unread ──
     try {
-      final c = await ChatService().getUnreadCount();
-      if (mounted && c != _unreadChat) setState(() => _unreadChat = c);
+      final c = await ChatService.instance.getUnreadCount();
+      if (mounted && c != _unreadChat) {
+        // Show push for new chat messages
+        if (!_firstFetch && c > _unreadChat) {
+          final diff = c - _unreadChat;
+          _push.showNotification(
+            id: 'chat_unread'.hashCode,
+            title: 'New Message${diff > 1 ? 's' : ''}',
+            body: 'You have $diff unread message${diff > 1 ? 's' : ''}',
+            payload: '/chat',
+          );
+        }
+        setState(() => _unreadChat = c);
+      }
     } catch (_) {}
+
+    // ── Notification unread count sync ──
     try {
-      final n = await NotificationService().getUnreadCount();
-      if (mounted && n != _unreadNotif) setState(() => _unreadNotif = n);
+      final n = await _notifService.getUnreadCount();
+      if (mounted && n != _unreadNotif) {
+        // If count increased and socket missed it, fetch latest to push
+        if (!_firstFetch && n > _unreadNotif) {
+          _showNewNotifications();
+        }
+        setState(() => _unreadNotif = n);
+      }
+    } catch (_) {}
+
+    _firstFetch = false;
+  }
+
+  /// Fetch the latest notifications and show a native push for any
+  /// unread ones we haven't shown yet (fallback for missed socket events).
+  Future<void> _showNewNotifications() async {
+    try {
+      final result = await _notifService.getNotifications(page: 1, limit: 10);
+      for (final notif in result.data) {
+        if (!notif.read && !_shownNotifIds.contains(notif.id)) {
+          _shownNotifIds.add(notif.id);
+          _push.showNotification(
+            id: notif.id.hashCode,
+            title: notif.title,
+            body: notif.message,
+            payload: notif.link ?? '/notifications',
+          );
+        }
+      }
+      // Keep the set from growing unbounded
+      if (_shownNotifIds.length > 200) {
+        final toRemove = _shownNotifIds.take(_shownNotifIds.length - 100).toList();
+        _shownNotifIds.removeAll(toRemove);
+      }
     } catch (_) {}
   }
 

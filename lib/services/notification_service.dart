@@ -2,6 +2,8 @@ import '../models/notification.dart' as app;
 import 'api_service.dart';
 
 class NotificationService extends ApiService {
+  NotificationService._();
+  static final NotificationService instance = NotificationService._();
   Future<({List<app.AppNotification> data, int total, int pages})> getNotifications({
     int page = 1,
     int limit = 20,
@@ -37,5 +39,14 @@ class NotificationService extends ApiService {
 
   Future<void> markAllRead() async {
     await dio.patch('/notifications/read-all');
+  }
+
+  Future<int> deleteReadNotifications() async {
+    final res = await dio.delete('/notifications/read');
+    final data = res.data;
+    if (data is Map<String, dynamic>) {
+      return (data['deleted'] as int?) ?? 0;
+    }
+    return 0;
   }
 }

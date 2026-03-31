@@ -4,8 +4,8 @@ import '../services/auth_service.dart';
 import '../services/api_service.dart';
 import '../services/two_factor_service.dart';
 
-final authServiceProvider = Provider((ref) => AuthService());
-final twoFactorServiceProvider = Provider((ref) => TwoFactorService());
+final authServiceProvider = Provider((ref) => AuthService.instance);
+final twoFactorServiceProvider = Provider((ref) => TwoFactorService.instance);
 
 class AuthState {
   final User? user;
@@ -67,15 +67,15 @@ class AuthNotifier extends Notifier<AuthState> {
     ApiService.onAuthExpired = _handleAuthExpired;
     try {
       final user = await _service.getCurrentUser();
-      final token = await _service.storage.read(key: 'jwt_token');
+      final token = await ApiService.getToken();
       if (user != null && token != null) {
         state = AuthState(user: user, token: token);
       } else {
-        await _service.storage.delete(key: 'jwt_token');
+        await ApiService.clearToken();
         state = const AuthState();
       }
     } catch (_) {
-      await _service.storage.delete(key: 'jwt_token');
+      await ApiService.clearToken();
       state = const AuthState();
     }
   }
@@ -116,7 +116,7 @@ class AuthNotifier extends Notifier<AuthState> {
     try {
       final data = await _twoFactorService.verify(state.tempToken!, code);
       final token = data['token'] as String;
-      await _service.storage.write(key: 'jwt_token', value: token);
+      await ApiService.setToken(token);
       final user = User.fromJson(data['user'] as Map<String, dynamic>);
       state = AuthState(user: user, token: token);
     } catch (e) {

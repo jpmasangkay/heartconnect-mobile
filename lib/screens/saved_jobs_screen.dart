@@ -13,7 +13,7 @@ class SavedJobsScreen extends StatefulWidget {
 }
 
 class _SavedJobsScreenState extends State<SavedJobsScreen> {
-  final _service = SavedJobService();
+  final _service = SavedJobService.instance;
   final _jobs = <Job>[];
   bool _loading = true;
   int _page = 1;

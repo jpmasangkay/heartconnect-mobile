@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:socket_io_client/socket_io_client.dart' as io;
 import '../models/job.dart';
 import 'api_service.dart';
+import 'socket_service.dart';
 
 int _readInt(dynamic v, [int fallback = 0]) {
   if (v == null) return fallback;
@@ -12,8 +12,10 @@ int _readInt(dynamic v, [int fallback = 0]) {
 }
 
 class JobService extends ApiService {
-  io.Socket? _socket;
-  bool _disposed = false;
+  JobService._();
+  static final JobService instance = JobService._();
+
+  bool _socketInitialized = false;
   Map<String, dynamic> _unwrapJobPayload(dynamic raw) {
     if (raw is Map<String, dynamic>) {
       if (raw['_id'] != null || raw['id'] != null) return raw;
@@ -122,48 +124,33 @@ class JobService extends ApiService {
 
   // ── Socket ───────────────────────────────────────────────────────────────
 
+  bool _listenersRegistered = false;
+  VoidCallback? _onNewJob;
+
   Future<void> initSocket({
     required VoidCallback onNewJob,
   }) async {
-    final token = await storage.read(key: 'jwt_token');
-    if (token == null || _disposed) return;
-
-    _socket?.disconnect();
-    _socket?.dispose();
-
-    _socket = io.io(
-      ApiService.socketUrl,
-      io.OptionBuilder()
-          .setTransports(['websocket', 'polling'])
-          .disableAutoConnect()
-          .enableReconnection()
-          .setReconnectionAttempts(999)
-          .setReconnectionDelay(300)
-          .setReconnectionDelayMax(8000)
-          .setTimeout(8000)
-          .setAuth({'token': token, 'platform': ApiService.platform})
-          .build(),
-    );
-
-    _socket!.onConnect((_) {
-      debugPrint('Job Socket connected');
-    });
-
-    _socket!.on('job:new', (_) {
-      onNewJob();
-    });
+    _onNewJob = onNewJob;
+    if (_socketInitialized) return;
+    _socketInitialized = true;
     
-    _socket!.on('new_job', (_) {
-      onNewJob();
-    });
+    final socketSvc = SocketService.instance;
+    await socketSvc.initSocket();
 
-    _socket!.connect();
+    if (!_listenersRegistered) {
+      _listenersRegistered = true;
+      socketSvc.on('job:new', (_) {
+        _onNewJob?.call();
+      });
+      
+      socketSvc.on('new_job', (_) {
+        _onNewJob?.call();
+      });
+    }
   }
 
   void disposeSocket() {
-    _disposed = true;
-    _socket?.disconnect();
-    _socket?.dispose();
-    _socket = null;
+    _socketInitialized = false;
+    _onNewJob = null;
   }
 }

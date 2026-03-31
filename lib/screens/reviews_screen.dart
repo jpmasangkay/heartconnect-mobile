@@ -16,7 +16,7 @@ class ReviewsScreen extends ConsumerStatefulWidget {
 }
 
 class _ReviewsScreenState extends ConsumerState<ReviewsScreen> {
-  final _service = ReviewService();
+  final _service = ReviewService.instance;
 
   bool _loading = true;
   List<Review> _reviews = [];

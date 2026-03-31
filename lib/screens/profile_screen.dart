@@ -63,7 +63,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
     setState(() { _saving = true; _error = null; });
     try {
-      final updated = await AuthService().updateProfile({
+      final updated = await AuthService.instance.updateProfile({
         'name': _nameCtrl.text.trim(),
         'bio': _bioCtrl.text.trim(),
         'location': _locationCtrl.text.trim(),
@@ -79,7 +79,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     } catch (e) {
       setState(() {
         _saving = false;
-        _error = AuthService().extractError(e);
+        _error = AuthService.instance.extractError(e);
       });
     }
   }

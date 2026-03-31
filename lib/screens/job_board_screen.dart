@@ -7,7 +7,7 @@ import '../models/job.dart';
 import '../theme/app_theme.dart';
 import '../widgets/shared_widgets.dart';
 
-final _jobServiceProvider = Provider((ref) => JobService());
+final _jobServiceProvider = Provider((ref) => JobService.instance);
 
 class JobBoardScreen extends ConsumerStatefulWidget {
   const JobBoardScreen({super.key});
@@ -29,22 +29,18 @@ class _JobBoardScreenState extends ConsumerState<JobBoardScreen> {
   List<Job> _jobs = [];
   List<String> _categories = [];
 
-  Timer? _refreshTimer;
-
   @override
   void initState() {
     super.initState();
     _loadCategories();
     _fetchJobs();
     _scrollCtrl.addListener(_onScroll);
-    _refreshTimer = Timer.periodic(const Duration(seconds: 45), (_) => _silentRefresh());
     ref.read(_jobServiceProvider).initSocket(onNewJob: _silentRefresh);
   }
 
   @override
   void dispose() {
     ref.read(_jobServiceProvider).disposeSocket();
-    _refreshTimer?.cancel();
     _searchCtrl.dispose();
     _scrollCtrl.dispose();
     super.dispose();

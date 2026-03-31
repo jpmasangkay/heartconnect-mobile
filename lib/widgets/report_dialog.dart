@@ -50,7 +50,7 @@ class _ReportDialogState extends State<ReportDialog> {
       _error = null;
     });
     try {
-      await ReportService().submitReport(
+      await ReportService.instance.submitReport(
         targetType: widget.targetType,
         targetId: widget.targetId,
         reason: _reason!,

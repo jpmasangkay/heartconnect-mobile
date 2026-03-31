@@ -12,7 +12,7 @@ class BlockedUsersScreen extends StatefulWidget {
 }
 
 class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
-  final _service = BlockService();
+  final _service = BlockService.instance;
   List<User> _users = [];
   bool _loading = true;
 
