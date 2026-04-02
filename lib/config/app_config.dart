@@ -20,7 +20,8 @@ abstract final class AppConfig {
     if (vite.isNotEmpty) return _trimTrailingSlashes(vite);
     const api = String.fromEnvironment('API_BASE_URL');
     if (api.isNotEmpty) return _trimTrailingSlashes(api);
-    const host = String.fromEnvironment('API_HOST', defaultValue: '127.0.0.1:5000');
+    const host = String.fromEnvironment('API_HOST', defaultValue: 'heartconnect.onrender.com');
+    if (host == 'heartconnect.onrender.com') return 'https://heartconnect.onrender.com/api';
     return 'http://$host/api';
   }
 

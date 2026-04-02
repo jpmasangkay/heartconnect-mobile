@@ -28,6 +28,7 @@ class _JobBoardScreenState extends ConsumerState<JobBoardScreen> {
   String? _loadError;
   List<Job> _jobs = [];
   List<String> _categories = [];
+  StreamSubscription<void>? _socketSub;
 
   @override
   void initState() {
@@ -35,12 +36,14 @@ class _JobBoardScreenState extends ConsumerState<JobBoardScreen> {
     _loadCategories();
     _fetchJobs();
     _scrollCtrl.addListener(_onScroll);
-    ref.read(_jobServiceProvider).initSocket(onNewJob: _silentRefresh);
+    final jobService = ref.read(_jobServiceProvider);
+    jobService.setupSocketListeners();
+    _socketSub = jobService.onNewJob.listen((_) => _silentRefresh());
   }
 
   @override
   void dispose() {
-    ref.read(_jobServiceProvider).disposeSocket();
+    _socketSub?.cancel();
     _searchCtrl.dispose();
     _scrollCtrl.dispose();
     super.dispose();

@@ -1,4 +1,7 @@
+import 'dart:io' show Platform;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'router/app_router.dart';
 import 'theme/app_theme.dart';
@@ -24,7 +27,8 @@ class _HeartConnectAppState extends ConsumerState<HeartConnectApp> {
     final router = ref.watch(routerProvider);
 
     // Initialize push notifications once we have the router
-    if (!_pushInitialized) {
+    final isFlutterTest = !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
+    if (!_pushInitialized && !isFlutterTest) {
       _pushInitialized = true;
       PushNotificationService.instance.init(router: router);
     }

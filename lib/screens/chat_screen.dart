@@ -33,6 +33,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final _scrollCtrl = ScrollController();
   Timer? _typingTimer;
   DateTime? _lastTypingEmit;
+  final List<StreamSubscription> _subs = [];
 
   @override
   void initState() {
@@ -44,10 +45,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   void dispose() {
+    for (final s in _subs) {
+      s.cancel();
+    }
     _typingTimer?.cancel();
     _inputCtrl.dispose();
     _scrollCtrl.dispose();
-    _chat.disposeSocket();
     super.dispose();
   }
 
@@ -84,92 +87,97 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   Future<void> _initSocket() async {
     setState(() => _socketConnecting = true);
-    await _chat.initSocket(
-      onMessage: (msg) {
-        if (!mounted) return;
+    
+    _chat.setupSocketListeners();
 
-        final isActiveConvo = _active != null && msg.conversationId == _active!.id;
-        final knownConvo = _conversations.any((c) => c.id == msg.conversationId);
+    _subs.add(_chat.onMessage.listen((msg) {
+      if (!mounted) return;
 
-        setState(() {
-          _socketConnected = true;
-          _socketConnecting = false;
+      final isActiveConvo = _active != null && msg.conversationId == _active!.id;
+      final knownConvo = _conversations.any((c) => c.id == msg.conversationId);
 
-          if (isActiveConvo) {
-            final exists = _messages.any((m) => m.id == msg.id || (m.id.startsWith('opt-') && m.sender?.id == msg.sender?.id && m.content == msg.content));
-            if (!exists) {
-              _messages = [..._messages, msg];
-            } else {
-              // Replace optimistic with real
-              _messages = _messages.map((m) => (m.id.startsWith('opt-') && m.sender?.id == msg.sender?.id && m.content == msg.content) ? msg : m).toList();
-            }
-          }
-
-          if (knownConvo) {
-            _conversations = _conversations.map((c) {
-              if (c.id == msg.conversationId) {
-                return Conversation(
-                  id: c.id,
-                  participants: c.participants,
-                  job: c.job,
-                  lastMessage: msg,
-                  unreadCount: isActiveConvo ? 0 : c.unreadCount + 1,
-                  createdAt: c.createdAt,
-                  updatedAt: msg.createdAt,
-                );
-              }
-              return c;
-            }).toList();
-          }
-
-          _conversations.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
-        });
-
-        if (!knownConvo) {
-          _syncConversations();
-        }
+      setState(() {
+        _socketConnected = true;
+        _socketConnecting = false;
 
         if (isActiveConvo) {
-          _scrollDown();
-          _chat.markRead(_active!.id);
-        }
-      },
-      onConversationChanged: () {
-        // Ensure conversation list stays in sync when server emits conversation/new/hidden/deleted/read.
-        _syncConversations();
-      },
-      onTyping: (userId, convoId, userName) {
-        final me = ref.read(authProvider).user?.id;
-        if (userId == me || !mounted) return;
-        setState(() {
-          _typingConvoId = convoId;
-          _typingPeerName =
-              userName != null && userName.trim().isNotEmpty ? userName.trim() : null;
-          _socketConnected = true;
-          _socketConnecting = false;
-        });
-        _typingTimer?.cancel();
-        _typingTimer = Timer(const Duration(seconds: 3), () {
-          if (mounted) {
-            setState(() {
-              _typingConvoId = null;
-              _typingPeerName = null;
-            });
+          final exists = _messages.any((m) => m.id == msg.id || (m.id.startsWith('opt-') && m.sender?.id == msg.sender?.id && m.content == msg.content));
+          if (!exists) {
+            _messages = [..._messages, msg];
+          } else {
+            // Replace optimistic with real
+            _messages = _messages.map((m) => (m.id.startsWith('opt-') && m.sender?.id == msg.sender?.id && m.content == msg.content) ? msg : m).toList();
           }
-        });
-      },
-      onConnect: () {
-        if (!mounted) return;
-        setState(() { _socketConnected = true; _socketConnecting = false; });
-        for (final c in _conversations) {
-          _chat.joinRoom(c.id);
         }
-      },
-      onDisconnect: () {
-        if (!mounted) return;
-        setState(() { _socketConnected = false; });
-      },
-    );
+
+        if (knownConvo) {
+          _conversations = _conversations.map((c) {
+            if (c.id == msg.conversationId) {
+              return Conversation(
+                id: c.id,
+                participants: c.participants,
+                job: c.job,
+                lastMessage: msg,
+                unreadCount: isActiveConvo ? 0 : c.unreadCount + 1,
+                createdAt: c.createdAt,
+                updatedAt: msg.createdAt,
+              );
+            }
+            return c;
+          }).toList();
+        }
+
+        _conversations.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+      });
+
+      if (!knownConvo) {
+        _syncConversations();
+      }
+
+      if (isActiveConvo) {
+        _scrollDown();
+        _chat.markRead(_active!.id);
+      }
+    }));
+
+    _subs.add(_chat.onConversationChanged.listen((_) {
+      _syncConversations();
+    }));
+
+    _subs.add(_chat.onTyping.listen((event) {
+      final me = ref.read(authProvider).user?.id;
+      if (event.userId == me || !mounted) return;
+      setState(() {
+        _typingConvoId = event.conversationId;
+        _typingPeerName =
+            event.userName != null && event.userName!.trim().isNotEmpty ? event.userName!.trim() : null;
+        _socketConnected = true;
+        _socketConnecting = false;
+      });
+      _typingTimer?.cancel();
+      _typingTimer = Timer(const Duration(seconds: 3), () {
+        if (mounted) {
+          setState(() {
+            _typingConvoId = null;
+            _typingPeerName = null;
+          });
+        }
+      });
+    }));
+
+    _subs.add(_chat.onConnect.listen((_) {
+      if (!mounted) return;
+      setState(() { _socketConnected = true; _socketConnecting = false; });
+      for (final c in _conversations) {
+        _chat.joinRoom(c.id);
+      }
+    }));
+
+    _subs.add(_chat.onDisconnect.listen((_) {
+      if (!mounted) return;
+      setState(() { _socketConnected = false; });
+    }));
+
     if (mounted) setState(() { _socketConnected = _chat.isSocketConnected; _socketConnecting = false; });
   }
 

@@ -9,6 +9,7 @@ import '../services/chat_service.dart';
 import '../services/notification_service.dart';
 import '../services/notification_socket_service.dart';
 import '../services/push_notification_service.dart';
+import '../services/socket_service.dart';
 import '../models/notification.dart' as app;
 
 const _ink = Color(0xFF1C3A28);
@@ -36,6 +37,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   /// so we don't spam the user on every poll cycle.
   final Set<String> _shownNotifIds = {};
   bool _firstFetch = true;
+  final List<StreamSubscription> _subs = [];
 
   @override
   void initState() {
@@ -46,24 +48,29 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
   @override
   void dispose() {
-    _notifSocket.disposeSocket();
+    for (final s in _subs) {
+      s.cancel();
+    }
     super.dispose();
   }
 
   /// Connect to Socket.IO for instant notification delivery.
   Future<void> _initNotifSocket() async {
     try {
-      await _notifSocket.initSocket(
-        onNotification: _onRealtimeNotification,
-        onUnreadCount: (count) {
-          if (mounted && count != _unreadNotif) {
-            setState(() => _unreadNotif = count);
-          }
-        },
-        onConnect: () {
-          debugPrint('Notification socket ready — real-time push active');
-        },
-      );
+      await SocketService.instance.initSocket();
+      _notifSocket.setupSocketListeners();
+      
+      _subs.add(_notifSocket.onNotification.listen(_onRealtimeNotification));
+      
+      _subs.add(_notifSocket.onUnreadCount.listen((count) {
+        if (mounted && count != _unreadNotif) {
+          setState(() => _unreadNotif = count);
+        }
+      }));
+      
+      _subs.add(_notifSocket.onConnect.listen((_) {
+        debugPrint('Notification socket ready — real-time push active');
+      }));
     } catch (e) {
       debugPrint('Failed to init notification socket: $e');
     }

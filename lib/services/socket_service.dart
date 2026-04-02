@@ -24,13 +24,11 @@ class SocketService {
   bool get isConnected => _socket?.connected ?? false;
 
   Future<void> initSocket() async {
+    _disposed = false;
     final token = await ApiService.getToken();
-    if (token == null || _disposed) return;
+    if (token == null) return;
 
-    if (_socket != null && _socket!.connected) return;
-
-    _socket?.disconnect();
-    _socket?.dispose();
+    if (_socket != null) return;
 
     _socket = io.io(
       ApiService.socketUrl,

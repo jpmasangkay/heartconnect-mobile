@@ -44,129 +44,158 @@ class LandingScreen extends StatelessWidget {
                   SafeArea(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 28),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 24),
-                          // Nav row
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(children: [
-                                Container(
-                                  width: 8, height: 8,
-                                  decoration: const BoxDecoration(
-                                      color: AppColors.accent,
-                                      shape: BoxShape.circle),
-                                ),
-                                const SizedBox(width: 8),
-                                const Text('HeartConnect',
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          return SingleChildScrollView(
+                            child: ConstrainedBox(
+                              constraints:
+                                  BoxConstraints(minHeight: constraints.maxHeight),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(height: 24),
+                                  // Nav row
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(children: [
+                                        Container(
+                                          width: 8,
+                                          height: 8,
+                                          decoration: const BoxDecoration(
+                                            color: AppColors.accent,
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        const Text(
+                                          'HeartConnect',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w800,
+                                            fontSize: 16,
+                                            color: AppColors.navy,
+                                          ),
+                                        ),
+                                      ]),
+                                      OutlinedButton(
+                                        onPressed: () => context.go('/login'),
+                                        style: OutlinedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: 8,
+                                          ),
+                                          minimumSize: Size.zero,
+                                          tapTargetSize:
+                                              MaterialTapTargetSize.shrinkWrap,
+                                        ),
+                                        child: const Text(
+                                          'Sign in',
+                                          style: TextStyle(fontSize: 12),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                  const SizedBox(height: 48),
+                                  // Label
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 5,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.navy
+                                          .withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(24),
+                                    ),
+                                    child: const Text(
+                                      'For Cordians, by Cordians',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600,
+                                        letterSpacing: 0.8,
+                                        color: AppColors.navy,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 18),
+                                  const Text(
+                                    'Connecting\nSkills to\nEvery Need.',
                                     style: TextStyle(
-                                        fontWeight: FontWeight.w800,
-                                        fontSize: 16,
-                                        color: AppColors.navy)),
-                              ]),
-                              OutlinedButton(
-                                onPressed: () => context.go('/login'),
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 8),
-                                  minimumSize: Size.zero,
-                                  tapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                ),
-                                child: const Text('Sign in',
-                                    style: TextStyle(fontSize: 12)),
-                              )
-                            ],
-                          ),
-                          const Spacer(),
-                          // Label
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 5),
-                            decoration: BoxDecoration(
-                              color: AppColors.navy.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(24),
-                            ),
-                            child: const Text('For Cordians, by Cordians',
-                                style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w600,
-                                    letterSpacing: 0.8,
-                                    color: AppColors.navy)),
-                          ),
-                          const SizedBox(height: 18),
-                          const Text(
-                            'Connecting\nSkills to\nEvery Need.',
-                            style: TextStyle(
-                              fontSize: 42,
-                              fontWeight: FontWeight.w900,
-                              color: AppColors.navy,
-                              height: 1.1,
-                            ),
-                          ),
-                          const SizedBox(height: 18),
-                          const Text(
-                            'A dedicated space for Cordians to find work, gain experience, and help each other.',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: AppColors.textMuted,
-                              height: 1.6,
-                            ),
-                          ),
-                          const SizedBox(height: 36),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: ElevatedButton(
-                                  onPressed: () =>
-                                      context.go('/register'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.navy,
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 14),
+                                      fontSize: 42,
+                                      fontWeight: FontWeight.w900,
+                                      color: AppColors.navy,
+                                      height: 1.1,
+                                    ),
                                   ),
-                                  child: const Text('Be a Freelancer'),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: OutlinedButton(
-                                  onPressed: () =>
-                                      context.go('/register'),
-                                  style: OutlinedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 14),
+                                  const SizedBox(height: 18),
+                                  const Text(
+                                    'A dedicated space for Cordians to find work, gain experience, and help each other.',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: AppColors.textMuted,
+                                      height: 1.6,
+                                    ),
                                   ),
-                                  child: const Text('Hire Talent'),
-                                ),
+                                  const SizedBox(height: 36),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: ElevatedButton(
+                                          onPressed: () =>
+                                              context.go('/register'),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: AppColors.navy,
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 14,
+                                            ),
+                                          ),
+                                          child:
+                                              const Text('Be a Freelancer'),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: OutlinedButton(
+                                          onPressed: () =>
+                                              context.go('/register'),
+                                          style: OutlinedButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 14,
+                                            ),
+                                          ),
+                                          child: const Text('Hire Talent'),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 40),
+                                  // Stats row
+                                  Container(
+                                    padding: const EdgeInsets.all(18),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(20),
+                                      boxShadow: AppColors.cardShadow,
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceAround,
+                                      children: const [
+                                        _StatItem('500+', 'Students'),
+                                        _Divider(),
+                                        _StatItem('120+', 'Open Gigs'),
+                                        _Divider(),
+                                        _StatItem('40+', 'Categories'),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 40),
+                                ],
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 40),
-                          // Stats row
-                          Container(
-                            padding: const EdgeInsets.all(18),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: AppColors.cardShadow,
                             ),
-                            child: Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceAround,
-                              children: const [
-                                _StatItem('500+', 'Students'),
-                                _Divider(),
-                                _StatItem('120+', 'Open Gigs'),
-                                _Divider(),
-                                _StatItem('40+', 'Categories'),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 40),
-                        ],
+                          );
+                        },
                       ),
                     ),
                   ),

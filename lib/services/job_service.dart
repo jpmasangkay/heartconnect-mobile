@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import '../models/job.dart';
 import 'api_service.dart';
 import 'socket_service.dart';
@@ -15,7 +14,6 @@ class JobService extends ApiService {
   JobService._();
   static final JobService instance = JobService._();
 
-  bool _socketInitialized = false;
   Map<String, dynamic> _unwrapJobPayload(dynamic raw) {
     if (raw is Map<String, dynamic>) {
       if (raw['_id'] != null || raw['id'] != null) return raw;
@@ -125,32 +123,26 @@ class JobService extends ApiService {
   // ── Socket ───────────────────────────────────────────────────────────────
 
   bool _listenersRegistered = false;
-  VoidCallback? _onNewJob;
+  final _newJobController = StreamController<void>.broadcast();
+  Stream<void> get onNewJob => _newJobController.stream;
 
-  Future<void> initSocket({
-    required VoidCallback onNewJob,
-  }) async {
-    _onNewJob = onNewJob;
-    if (_socketInitialized) return;
-    _socketInitialized = true;
+  void setupSocketListeners() {
+    if (_listenersRegistered) return;
+    _listenersRegistered = true;
     
     final socketSvc = SocketService.instance;
-    await socketSvc.initSocket();
 
-    if (!_listenersRegistered) {
-      _listenersRegistered = true;
-      socketSvc.on('job:new', (_) {
-        _onNewJob?.call();
-      });
-      
-      socketSvc.on('new_job', (_) {
-        _onNewJob?.call();
-      });
-    }
+    socketSvc.on('job:new', (_) {
+      _newJobController.add(null);
+    });
+    
+    socketSvc.on('new_job', (_) {
+      _newJobController.add(null);
+    });
   }
 
   void disposeSocket() {
-    _socketInitialized = false;
-    _onNewJob = null;
+    _newJobController.close();
+    _listenersRegistered = false;
   }
 }
