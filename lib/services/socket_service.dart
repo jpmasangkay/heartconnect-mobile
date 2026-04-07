@@ -10,25 +10,34 @@ class SocketService {
 
   io.Socket? _socket;
   bool _disposed = false;
+  String? _currentToken;
 
   final Set<String> _joinedRooms = {};
   
-  // Callback registries
   final List<VoidCallback> _onConnectListeners = [];
   final List<VoidCallback> _onDisconnectListeners = [];
   
-  // Event listeners map: eventName -> list of callbacks
   final Map<String, List<Function(dynamic)>> _eventListeners = {};
 
   io.Socket? get socket => _socket;
   bool get isConnected => _socket?.connected ?? false;
 
+  /// Initializes the socket, or reconnects if the auth token has changed.
   Future<void> initSocket() async {
     _disposed = false;
     final token = await ApiService.getToken();
     if (token == null) return;
 
-    if (_socket != null) return;
+    if (_socket != null && _currentToken == token) return;
+
+    // Token changed (re-login) — tear down the old socket first.
+    if (_socket != null && _currentToken != token) {
+      _socket!.disconnect();
+      _socket!.dispose();
+      _socket = null;
+    }
+
+    _currentToken = token;
 
     _socket = io.io(
       ApiService.socketUrl,
@@ -36,45 +45,43 @@ class SocketService {
           .setTransports(['websocket', 'polling'])
           .disableAutoConnect()
           .enableReconnection()
-          .setReconnectionAttempts(999)
-          .setReconnectionDelay(300)
-          .setReconnectionDelayMax(8000)
-          .setTimeout(8000)
+          .setReconnectionAttempts(50)
+          .setReconnectionDelay(1000)
+          .setReconnectionDelayMax(15000)
+          .setTimeout(10000)
           .setAuth({'token': token, 'platform': ApiService.platform})
           .build(),
     );
 
     _socket!.onConnect((_) {
       if (_disposed) return;
-      debugPrint('Master Socket connected');
+      assert(() { debugPrint('Master Socket connected'); return true; }());
       for (final room in _joinedRooms) {
         _socket?.emit('join_room', room);
       }
-      for (final listener in _onConnectListeners) {
+      for (final listener in List.of(_onConnectListeners)) {
         listener();
       }
     });
 
     _socket!.onDisconnect((reason) {
       if (_disposed) return;
-      debugPrint('Master Socket disconnected: $reason');
-      for (final listener in _onDisconnectListeners) {
+      assert(() { debugPrint('Master Socket disconnected: $reason'); return true; }());
+      for (final listener in List.of(_onDisconnectListeners)) {
         listener();
       }
     });
 
     _socket!.onConnectError((err) {
       if (_disposed) return;
-      debugPrint('Master Socket connect error: $err');
+      assert(() { debugPrint('Master Socket connect error: $err'); return true; }());
     });
 
     _socket!.onError((err) {
       if (_disposed) return;
-      debugPrint('Master Socket error: $err');
+      assert(() { debugPrint('Master Socket error: $err'); return true; }());
     });
 
-    // We use a wildcard catch-all approach if possible, but package socket_io_client 
-    // requires binding per event. We'll bind listeners dynamically when registered.
     for (final event in _eventListeners.keys) {
       _bindEventToSocket(event);
     }
@@ -84,7 +91,6 @@ class SocketService {
 
   void _bindEventToSocket(String event) {
     if (_socket == null) return;
-    // Don't bind twice
     if (_socket!.hasListeners(event)) return;
     
     _socket!.on(event, (data) {
@@ -93,7 +99,7 @@ class SocketService {
         try {
           listener(data);
         } catch (e) {
-          debugPrint('Error in socket listener for $event: $e');
+          assert(() { debugPrint('Error in socket listener for $event: $e'); return true; }());
         }
       }
     });
@@ -114,8 +120,6 @@ class SocketService {
 
   void off(String event, Function(dynamic) callback) {
     _eventListeners[event]?.remove(callback);
-    // When the last listener is removed, tear down the socket binding too
-    // so the event handler doesn't linger and accumulate over reconnects.
     if (_eventListeners[event]?.isEmpty ?? false) {
       _eventListeners.remove(event);
       _socket?.off(event);
@@ -148,6 +152,7 @@ class SocketService {
     _onDisconnectListeners.clear();
     _eventListeners.clear();
     _joinedRooms.clear();
+    _currentToken = null;
     _socket?.disconnect();
     _socket?.dispose();
     _socket = null;

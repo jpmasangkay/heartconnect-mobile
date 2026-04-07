@@ -10,13 +10,8 @@ import '../services/notification_service.dart';
 import '../services/notification_socket_service.dart';
 import '../services/push_notification_service.dart';
 import '../services/socket_service.dart';
+import '../theme/app_theme.dart';
 import '../models/notification.dart' as app;
-
-const _ink = Color(0xFF1C3A28);
-const _parchment = Color(0xFFF8F5EE);
-const _muted = Color(0xFF7A8C7B);
-const _rust = Color(0xFFC4622A);
-const _rule = Color(0xFFCDD9C6);
 
 class MainScreen extends ConsumerStatefulWidget {
   final StatefulNavigationShell navigationShell;
@@ -26,15 +21,13 @@ class MainScreen extends ConsumerStatefulWidget {
   ConsumerState<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends ConsumerState<MainScreen> {
+class _MainScreenState extends ConsumerState<MainScreen> with WidgetsBindingObserver {
   int _unreadChat = 0;
   int _unreadNotif = 0;
   final _notifService = NotificationService.instance;
   final _notifSocket = NotificationSocketService.instance;
   final _push = PushNotificationService.instance;
 
-  /// Track IDs of notifications we've already shown a push for,
-  /// so we don't spam the user on every poll cycle.
   final Set<String> _shownNotifIds = {};
   bool _firstFetch = true;
   final List<StreamSubscription> _subs = [];
@@ -43,20 +36,37 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _initNotifSocket();
     _fetch();
-    // Periodic fallback poll: keeps badges accurate after missed socket events
-    // (e.g. brief disconnect, app backgrounded).
-    _pollTimer = Timer.periodic(const Duration(minutes: 2), (_) => _fetch());
+    _startPolling();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _pollTimer?.cancel();
     for (final s in _subs) {
       s.cancel();
     }
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _fetch();
+      _startPolling();
+    } else if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
+      _pollTimer?.cancel();
+      _pollTimer = null;
+    }
+  }
+
+  void _startPolling() {
+    _pollTimer?.cancel();
+    _pollTimer = Timer.periodic(const Duration(minutes: 2), (_) => _fetch());
   }
 
   /// Connect to Socket.IO for instant notification delivery.
@@ -80,10 +90,10 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       }));
       
       _subs.add(_notifSocket.onConnect.listen((_) {
-        debugPrint('Notification socket ready — real-time push active');
+        assert(() { debugPrint('Notification socket ready — real-time push active'); return true; }());
       }));
     } catch (e) {
-      debugPrint('Failed to init notification socket: $e');
+      assert(() { debugPrint('Failed to init notification socket: $e'); return true; }());
     }
   }
 
@@ -196,7 +206,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: _parchment,
+        backgroundColor: AppColors.parchment,
         body: widget.navigationShell,
         bottomNavigationBar: _BottomNav(
           currentIndex: navIndex,
@@ -269,7 +279,7 @@ class _BottomNav extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: _rule.withValues(alpha: 0.6), width: 1)),
+        border: Border(top: BorderSide(color: AppColors.rule.withValues(alpha: 0.6), width: 1)),
       ),
       child: SafeArea(
         top: false,
@@ -321,7 +331,7 @@ class _NavItem extends StatelessWidget {
                 Icon(
                   isActive ? item.activeIcon : item.icon,
                   size: 22,
-                  color: isActive ? _ink : _muted,
+                  color: isActive ? AppColors.ink : AppColors.muted,
                 ),
                 if (item.badge > 0)
                   Positioned(
@@ -331,7 +341,7 @@ class _NavItem extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                       constraints: const BoxConstraints(minWidth: 16),
                       decoration: BoxDecoration(
-                        color: _rust,
+                        color: AppColors.rust,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(color: Colors.white, width: 1.5),
                       ),
@@ -351,7 +361,7 @@ class _NavItem extends StatelessWidget {
               style: GoogleFonts.inter(
                 fontSize: 10,
                 fontWeight: isActive ? FontWeight.w700 : FontWeight.w400,
-                color: isActive ? _ink : _muted,
+                color: isActive ? AppColors.ink : AppColors.muted,
               ),
               child: Text(item.label),
             ),
@@ -361,7 +371,7 @@ class _NavItem extends StatelessWidget {
               height: 2,
               width: isActive ? 18 : 0,
               decoration: BoxDecoration(
-                color: _ink,
+                color: AppColors.ink,
                 borderRadius: BorderRadius.circular(1),
               ),
             ),
@@ -392,7 +402,7 @@ class _NotifItem extends StatelessWidget {
                 Icon(
                   count > 0 ? Icons.notifications_rounded : Icons.notifications_outlined,
                   size: 22,
-                  color: count > 0 ? _rust : _muted,
+                  color: count > 0 ? AppColors.rust : AppColors.muted,
                 ),
                 if (count > 0)
                   Positioned(
@@ -402,7 +412,7 @@ class _NotifItem extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                       constraints: const BoxConstraints(minWidth: 16),
                       decoration: BoxDecoration(
-                        color: _rust,
+                        color: AppColors.rust,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(color: Colors.white, width: 1.5),
                       ),
@@ -418,14 +428,14 @@ class _NotifItem extends StatelessWidget {
             ),
             const SizedBox(height: 3),
             Text('Notifs',
-                style: GoogleFonts.inter(fontSize: 10, color: _muted, fontWeight: FontWeight.w400)),
+                style: GoogleFonts.inter(fontSize: 10, color: AppColors.muted, fontWeight: FontWeight.w400)),
             const SizedBox(height: 2),
             AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               height: 2,
               width: 0,
               decoration: BoxDecoration(
-                color: _ink,
+                color: AppColors.ink,
                 borderRadius: BorderRadius.circular(1),
               ),
             ),

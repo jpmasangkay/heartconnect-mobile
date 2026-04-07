@@ -9,11 +9,12 @@ class ChatService extends ApiService {
   ChatService._();
   static final ChatService instance = ChatService._();
 
-  final _messageController = StreamController<Message>.broadcast();
-  final _conversationChangedController = StreamController<void>.broadcast();
-  final _typingController = StreamController<({String userId, String conversationId, String? userName})>.broadcast();
-  final _connectController = StreamController<void>.broadcast();
-  final _disconnectController = StreamController<void>.broadcast();
+  StreamController<Message> _messageController = StreamController<Message>.broadcast();
+  StreamController<void> _conversationChangedController = StreamController<void>.broadcast();
+  StreamController<({String userId, String conversationId, String? userName})> _typingController =
+      StreamController<({String userId, String conversationId, String? userName})>.broadcast();
+  StreamController<void> _connectController = StreamController<void>.broadcast();
+  StreamController<void> _disconnectController = StreamController<void>.broadcast();
 
   Stream<Message> get onMessage => _messageController.stream;
   Stream<void> get onConversationChanged => _conversationChangedController.stream;
@@ -131,7 +132,7 @@ class ChatService extends ApiService {
     });
 
     socketSvc.on('message_error', (data) {
-      debugPrint('Socket message_error: $data');
+      assert(() { debugPrint('Socket message_error: $data'); return true; }());
     });
 
     socketSvc.on('conversation:new', (_) => _conversationChangedController.add(null));
@@ -144,7 +145,7 @@ class ChatService extends ApiService {
         try {
           _messageController.add(Message.fromJson(Map<String, dynamic>.from(data)));
         } catch (e) {
-          debugPrint('Error parsing message: $e');
+          assert(() { debugPrint('Error parsing message: $e'); return true; }());
         }
       }
     });
@@ -203,6 +204,7 @@ class ChatService extends ApiService {
 
   bool get isSocketConnected => SocketService.instance.isConnected;
 
+  /// Resets stream controllers so they can be reused after logout/re-login.
   void disposeSocket() {
     _messageController.close();
     _conversationChangedController.close();
@@ -210,5 +212,10 @@ class ChatService extends ApiService {
     _connectController.close();
     _disconnectController.close();
     _listenersRegistered = false;
+    _messageController = StreamController<Message>.broadcast();
+    _conversationChangedController = StreamController<void>.broadcast();
+    _typingController = StreamController<({String userId, String conversationId, String? userName})>.broadcast();
+    _connectController = StreamController<void>.broadcast();
+    _disconnectController = StreamController<void>.broadcast();
   }
 }

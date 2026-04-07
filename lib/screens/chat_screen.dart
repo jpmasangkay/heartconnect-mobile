@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io' show File;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,8 +8,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import '../config/app_config.dart';
 import '../providers/auth_provider.dart';
+import '../services/api_service.dart';
 import '../services/chat_service.dart';
 import '../models/conversation.dart';
 import '../models/user.dart';
@@ -109,33 +110,44 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         _socketConnecting = false;
 
         if (isActiveConvo) {
-          final exists = _messages.any((m) => m.id == msg.id || (m.id.startsWith('opt-') && m.sender?.id == msg.sender?.id && m.content == msg.content));
-          if (!exists) {
-            _messages = [..._messages, msg];
+          final dupIdx = _messages.indexWhere((m) => m.id == msg.id);
+          if (dupIdx >= 0) {
+            // Exact duplicate — skip
           } else {
-            // Replace optimistic with real
-            _messages = _messages.map((m) => (m.id.startsWith('opt-') && m.sender?.id == msg.sender?.id && m.content == msg.content) ? msg : m).toList();
+            // Try to match the oldest optimistic message from this sender with same content
+            final optIdx = _messages.indexWhere((m) =>
+                m.id.startsWith('opt-') &&
+                m.sender?.id == msg.sender?.id &&
+                m.content == msg.content);
+            if (optIdx >= 0) {
+              _messages = List.of(_messages)..[optIdx] = msg;
+            } else {
+              _messages = [..._messages, msg];
+            }
           }
         }
 
         if (knownConvo) {
-          final updated = _conversations.map((c) {
-            if (c.id == msg.conversationId) {
-              return Conversation(
-                id: c.id,
-                participants: c.participants,
-                job: c.job,
-                lastMessage: msg,
-                unreadCount: isActiveConvo ? 0 : c.unreadCount + 1,
-                createdAt: c.createdAt,
-                updatedAt: msg.createdAt,
-              );
+          final updated = List.of(_conversations);
+          final idx = updated.indexWhere((c) => c.id == msg.conversationId);
+          if (idx >= 0) {
+            final c = updated[idx];
+            final patched = Conversation(
+              id: c.id,
+              participants: c.participants,
+              job: c.job,
+              lastMessage: msg,
+              unreadCount: isActiveConvo ? 0 : c.unreadCount + 1,
+              createdAt: c.createdAt,
+              updatedAt: msg.createdAt,
+            );
+            if (idx > 0) {
+              updated.removeAt(idx);
+              updated.insert(0, patched);
+            } else {
+              updated[0] = patched;
             }
-            return c;
-          }).toList();
-          // Only re-sort if the updated conversation is not already first
-          final movedIdx = updated.indexWhere((c) => c.id == msg.conversationId);
-          if (movedIdx > 0) updated.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+          }
           _conversations = updated;
         }
       });
@@ -291,6 +303,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     });
   }
 
+  int _optSeq = 0;
+
   Future<void> _send() async {
     final content = _inputCtrl.text.trim();
     if ((content.isEmpty && _selectedFile == null) || _active == null || _isSending) return;
@@ -299,8 +313,48 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final me = ref.read(authProvider).user;
     if (me == null) return;
 
+    // Validate file before sending
+    if (fileToSend != null && !kIsWeb) {
+      try {
+        final file = File(fileToSend.path);
+        final size = await file.length();
+        if (!mounted) return;
+        if (size > kMaxUploadBytes) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: const Text('File is too large. Maximum size is 10 MB.'),
+                behavior: SnackBarBehavior.floating,
+                margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            );
+          return;
+        }
+      } catch (_) {
+        if (!mounted) return;
+      }
+
+      final ext = fileToSend.name.split('.').last.toLowerCase();
+      if (ext.isNotEmpty && !kAllowedUploadExtensions.contains(ext)) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text('.$ext files are not allowed.'),
+              behavior: SnackBarBehavior.floating,
+              margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          );
+        return;
+      }
+    }
+
+    final optId = 'opt-${DateTime.now().millisecondsSinceEpoch}-${_optSeq++}';
     final optimistic = Message(
-      id: 'opt-${DateTime.now().millisecondsSinceEpoch}',
+      id: optId,
       conversationId: _active!.id,
       sender: me,
       content: content.isEmpty && fileToSend != null ? 'Attachment' : content,
@@ -354,7 +408,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       setState(() {
         _messages = _messages.where((m) => m.id != optimistic.id).toList();
       });
-      debugPrint('SEND_ERR: ${_chat.extractError(e)}');
+      assert(() { debugPrint('SEND_ERR: ${_chat.extractError(e)}'); return true; }());
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
@@ -1071,7 +1125,7 @@ class _MessageBubble extends StatelessWidget {
                           ClipRRect(
                             borderRadius: BorderRadius.circular(8),
                             child: CachedNetworkImage(
-                              imageUrl: '${AppConfig.apiBaseUrl.replaceAll('/api', '')}${msg.fileUrl}',
+                              imageUrl: '${AppColors.staticOrigin}${msg.fileUrl}',
                               placeholder: (context, url) => const SizedBox(width: 150, height: 150, child: Center(child: CircularProgressIndicator())),
                               errorWidget: (context, url, error) => const SizedBox(width: 150, height: 150, child: Center(child: Icon(Icons.broken_image))),
                               fit: BoxFit.cover,
@@ -1081,7 +1135,7 @@ class _MessageBubble extends StatelessWidget {
                         else
                           GestureDetector(
                             onTap: () async {
-                              final url = Uri.parse('${AppConfig.apiBaseUrl.replaceAll('/api', '')}${msg.fileUrl}');
+                              final url = Uri.parse('${AppColors.staticOrigin}${msg.fileUrl}');
                               if (await canLaunchUrl(url)) await launchUrl(url);
                             },
                             child: Container(

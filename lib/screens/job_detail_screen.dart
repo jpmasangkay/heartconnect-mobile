@@ -28,10 +28,6 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
   List<Review> _reviews = [];
   bool _hasReviewed = false;
   bool _loading = true;
-  bool _applying = false;
-  final _coverCtrl = TextEditingController();
-  final _rateCtrl = TextEditingController();
-  String? _formError;
   bool _applied = false;
 
   @override
@@ -42,8 +38,6 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
 
   @override
   void dispose() {
-    _coverCtrl.dispose();
-    _rateCtrl.dispose();
     super.dispose();
   }
 
@@ -60,7 +54,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
         job = await jobSvc.getJob(widget.jobId);
         break;
       } catch (e) {
-        debugPrint('getJob attempt $attempt failed: $e');
+        assert(() { debugPrint('getJob attempt $attempt failed: $e'); return true; }());
         if (attempt == 0) {
           await Future.delayed(const Duration(milliseconds: 600));
         }
@@ -79,7 +73,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
     final results = await Future.wait([
       if (userRole == 'client')
         appSvc.getForJob(widget.jobId).catchError((e) {
-          debugPrint('getForJob failed: $e');
+          assert(() { debugPrint('getForJob failed: $e'); return true; }());
           return <Application>[];
         })
       else
@@ -87,14 +81,14 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
         
       if (userRole == 'student')
         appSvc.getMyApplications().catchError((e) {
-          debugPrint('getMyApplications failed: $e');
+          assert(() { debugPrint('getMyApplications failed: $e'); return true; }());
           return <Application>[];
         })
       else
         Future.value(<Application>[]),
         
       ReviewService.instance.getJobReviews(widget.jobId).catchError((e) {
-        debugPrint('getJobReviews failed: $e');
+        assert(() { debugPrint('getJobReviews failed: $e'); return true; }());
         return <Review>[];
       }),
     ]);
@@ -117,21 +111,6 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
         _hasReviewed = alreadyReviewed;
         _loading = false;
       });
-    }
-  }
-
-  Future<void> _apply() async {
-    if (_coverCtrl.text.trim().isEmpty) { setState(() => _formError = 'Cover letter is required'); return; }
-    final rate = double.tryParse(_rateCtrl.text);
-    if (rate == null || rate <= 0) { setState(() => _formError = 'Enter a valid proposed rate'); return; }
-    setState(() { _applying = true; _formError = null; });
-    try {
-      final app = await ApplicationService.instance.apply(widget.jobId, _coverCtrl.text.trim(), rate);
-      if (!mounted) return;
-      setState(() { _myApplication = app; _applied = true; _applying = false; });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() { _formError = ApplicationService.instance.extractError(e); _applying = false; });
     }
   }
 
@@ -162,27 +141,23 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
     } catch (_) {}
   }
 
-  void _showApplySheet(BuildContext context) {
-    showModalBottomSheet(
+  void _showApplySheet(BuildContext context) async {
+    final result = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (sheetCtx) {
-        final nav = Navigator.of(sheetCtx);
         return _ApplySheet(
           job: _job!,
-          coverCtrl: _coverCtrl,
-          rateCtrl: _rateCtrl,
-          applying: _applying,
-          formError: _formError,
-          onApply: () async {
-            await _apply();
-            if (_applied && nav.canPop()) nav.pop();
-          },
+          jobId: widget.jobId,
         );
       },
     );
+    if (result == true && mounted) {
+      setState(() => _applied = true);
+      _load();
+    }
   }
 
   @override
@@ -629,18 +604,11 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
 // ── Apply bottom sheet ────────────────────────────────────────────────────────
 class _ApplySheet extends StatefulWidget {
   final Job job;
-  final TextEditingController coverCtrl, rateCtrl;
-  final bool applying;
-  final String? formError;
-  final Future<void> Function() onApply;
+  final String jobId;
 
   const _ApplySheet({
     required this.job,
-    required this.coverCtrl,
-    required this.rateCtrl,
-    required this.applying,
-    required this.formError,
-    required this.onApply,
+    required this.jobId,
   });
 
   @override
@@ -648,11 +616,44 @@ class _ApplySheet extends StatefulWidget {
 }
 
 class _ApplySheetState extends State<_ApplySheet> {
+  final _coverCtrl = TextEditingController();
+  final _rateCtrl = TextEditingController();
   bool _submitting = false;
+  String? _formError;
+
+  @override
+  void dispose() {
+    _coverCtrl.dispose();
+    _rateCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (_coverCtrl.text.trim().isEmpty) {
+      setState(() => _formError = 'Cover letter is required');
+      return;
+    }
+    final rate = double.tryParse(_rateCtrl.text);
+    if (rate == null || rate <= 0) {
+      setState(() => _formError = 'Enter a valid proposed rate');
+      return;
+    }
+    setState(() { _submitting = true; _formError = null; });
+    try {
+      await ApplicationService.instance.apply(widget.jobId, _coverCtrl.text.trim(), rate);
+      if (mounted) Navigator.of(context).pop(true);
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _formError = ApplicationService.instance.extractError(e);
+          _submitting = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final isLoading = widget.applying || _submitting;
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: SingleChildScrollView(
@@ -668,12 +669,12 @@ class _ApplySheetState extends State<_ApplySheet> {
               Text('Applying to: ${widget.job.title}',
                   style: const TextStyle(fontSize: 13, color: AppColors.textMuted), maxLines: 1, overflow: TextOverflow.ellipsis),
               const SizedBox(height: 20),
-              if (widget.formError != null) ...[ErrorBanner(widget.formError!), const SizedBox(height: 14)],
+              if (_formError != null) ...[ErrorBanner(_formError!), const SizedBox(height: 14)],
               const Text('Proposed Rate (₱)',
                   style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textBody)),
               const SizedBox(height: 8),
               TextField(
-                controller: widget.rateCtrl,
+                controller: _rateCtrl,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   hintText: widget.job.budget.toStringAsFixed(0),
@@ -685,7 +686,7 @@ class _ApplySheetState extends State<_ApplySheet> {
                   style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textBody)),
               const SizedBox(height: 8),
               TextField(
-                controller: widget.coverCtrl,
+                controller: _coverCtrl,
                 maxLines: 5,
                 decoration: const InputDecoration(
                   hintText: 'Describe your experience and why you\'re the best fit...',
@@ -696,12 +697,8 @@ class _ApplySheetState extends State<_ApplySheet> {
               MobileActionButton(
                 label: 'Submit Application',
                 icon: Icons.send_rounded,
-                loading: isLoading,
-                onPressed: isLoading ? null : () async {
-                  setState(() => _submitting = true);
-                  await widget.onApply();
-                  if (mounted) setState(() => _submitting = false);
-                },
+                loading: _submitting,
+                onPressed: _submitting ? null : _submit,
               ),
               const SizedBox(height: 8),
             ],
@@ -804,7 +801,7 @@ class _MetaTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = danger ? Colors.red : (accent ? AppColors.navy : AppColors.textBody);
     return Column(children: [
-      Icon(icon, size: 18, color: c.withValues(alpha: 0.1)),
+      Icon(icon, size: 18, color: c.withValues(alpha: 0.7)),
       const SizedBox(height: 4),
       Text(value, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: c)),
       Text(label, style: const TextStyle(fontSize: 10, color: AppColors.textMuted, fontWeight: FontWeight.w600)),

@@ -9,11 +9,11 @@ class NotificationSocketService extends ApiService {
   NotificationSocketService._();
   static final NotificationSocketService instance = NotificationSocketService._();
 
-  final _notificationController = StreamController<app.AppNotification>.broadcast();
-  final _unreadCountController = StreamController<int>.broadcast();
-  final _chatUnreadController = StreamController<int>.broadcast();
-  final _connectController = StreamController<void>.broadcast();
-  final _disconnectController = StreamController<void>.broadcast();
+  StreamController<app.AppNotification> _notificationController = StreamController<app.AppNotification>.broadcast();
+  StreamController<int> _unreadCountController = StreamController<int>.broadcast();
+  StreamController<int> _chatUnreadController = StreamController<int>.broadcast();
+  StreamController<void> _connectController = StreamController<void>.broadcast();
+  StreamController<void> _disconnectController = StreamController<void>.broadcast();
 
   bool _listenersRegistered = false;
 
@@ -38,7 +38,7 @@ class NotificationSocketService extends ApiService {
     });
 
     socketSvc.on('notification:new', (data) {
-      debugPrint('Received notification:new event: $data');
+      assert(() { debugPrint('Received notification:new event: $data'); return true; }());
       if (data != null) {
         try {
           final Map<String, dynamic> json;
@@ -50,13 +50,13 @@ class NotificationSocketService extends ApiService {
           final notif = app.AppNotification.fromJson(json);
           _notificationController.add(notif);
         } catch (e) {
-          debugPrint('Error parsing notification:new payload: $e');
+          assert(() { debugPrint('Error parsing notification:new payload: $e'); return true; }());
         }
       }
     });
 
     socketSvc.on('notification:count', (data) {
-      debugPrint('Received notification:count event: $data');
+      assert(() { debugPrint('Received notification:count event: $data'); return true; }());
       if (data != null) {
         try {
           int count;
@@ -69,13 +69,13 @@ class NotificationSocketService extends ApiService {
           }
           _unreadCountController.add(count);
         } catch (e) {
-          debugPrint('Error parsing notification:count payload: $e');
+          assert(() { debugPrint('Error parsing notification:count payload: $e'); return true; }());
         }
       }
     });
 
     socketSvc.on('chat:unread', (data) {
-      debugPrint('Received chat:unread event: $data');
+      assert(() { debugPrint('Received chat:unread event: $data'); return true; }());
       if (data != null) {
         try {
           int count;
@@ -88,7 +88,7 @@ class NotificationSocketService extends ApiService {
           }
           _chatUnreadController.add(count);
         } catch (e) {
-          debugPrint('Error parsing chat:unread payload: $e');
+          assert(() { debugPrint('Error parsing chat:unread payload: $e'); return true; }());
         }
       }
     });
@@ -103,5 +103,10 @@ class NotificationSocketService extends ApiService {
     _connectController.close();
     _disconnectController.close();
     _listenersRegistered = false;
+    _notificationController = StreamController<app.AppNotification>.broadcast();
+    _unreadCountController = StreamController<int>.broadcast();
+    _chatUnreadController = StreamController<int>.broadcast();
+    _connectController = StreamController<void>.broadcast();
+    _disconnectController = StreamController<void>.broadcast();
   }
 }

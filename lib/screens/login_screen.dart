@@ -18,6 +18,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _obscure = true;
   bool _loading = false;
   String? _error;
+  int _failedAttempts = 0;
+  DateTime? _lockedUntil;
 
   @override
   void dispose() {
@@ -27,6 +29,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _submit() async {
+    // Client-side rate limiting after repeated failures
+    if (_lockedUntil != null && DateTime.now().isBefore(_lockedUntil!)) {
+      final secs = _lockedUntil!.difference(DateTime.now()).inSeconds;
+      setState(() => _error = 'Too many attempts. Try again in ${secs}s.');
+      return;
+    }
+
     final email = _emailCtrl.text.trim();
     final pass = _passCtrl.text;
     final isValidEmail =
@@ -70,6 +79,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       context.go('/dashboard');
     } catch (e) {
       if (!mounted) return;
+      _failedAttempts++;
+      if (_failedAttempts >= 5) {
+        final delaySecs = _failedAttempts >= 10 ? 60 : 15;
+        _lockedUntil = DateTime.now().add(Duration(seconds: delaySecs));
+      }
       setState(() {
         _error = ref.read(authServiceProvider).extractError(e);
       });

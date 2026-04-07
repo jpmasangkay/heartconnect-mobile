@@ -14,10 +14,39 @@ class AppColors {
   static const border = Color(0xFFCDD9C6);
   static const sand = Color(0xFFD4B896);
 
+  // Shared screen-level tokens (previously duplicated across screens)
+  static const ink = Color(0xFF1C3A28);
+  static const parchment = Color(0xFFF8F5EE);
+  static const rust = Color(0xFFC4622A);
+  static const muted = Color(0xFF7A8C7B);
+  static const rule = Color(0xFFCDD9C6);
+
   // Real-time
   static const online = Color(0xFF22C55E);
   static const offline = Color(0xFF9CA3AF);
   static const connecting = Color(0xFFF59E0B);
+
+  /// Base origin for loading uploaded files (avatars, chat attachments, etc.).
+  /// Strips the `/api` suffix from the REST base URL.
+  static String get staticOrigin {
+    final base = _trimTrailingSlashes(
+        const String.fromEnvironment('VITE_API_URL',
+            defaultValue: ''));
+    if (base.isNotEmpty && base.endsWith('/api')) {
+      return base.substring(0, base.length - 4);
+    }
+    final rest = _ApiBaseHelper.apiBaseUrl;
+    if (rest.endsWith('/api')) return rest.substring(0, rest.length - 4);
+    return rest;
+  }
+
+  static String _trimTrailingSlashes(String s) {
+    var out = s.trim();
+    while (out.endsWith('/')) {
+      out = out.substring(0, out.length - 1);
+    }
+    return out;
+  }
 
   // ── Shadow helpers ──────────────────────────────────────────────────────
   static List<BoxShadow> get cardShadow => [
@@ -69,6 +98,18 @@ class AppColors {
       case 'finished': return const Color(0xFFEDE9FE);
       default: return const Color(0xFFF3F4F6);
     }
+  }
+}
+
+class _ApiBaseHelper {
+  static String get apiBaseUrl {
+    const vite = String.fromEnvironment('VITE_API_URL');
+    if (vite.isNotEmpty) return vite;
+    const api = String.fromEnvironment('API_BASE_URL');
+    if (api.isNotEmpty) return api;
+    const host = String.fromEnvironment('API_HOST', defaultValue: 'heartconnect.onrender.com');
+    if (host == 'heartconnect.onrender.com') return 'https://heartconnect.onrender.com/api';
+    return 'http://$host/api';
   }
 }
 

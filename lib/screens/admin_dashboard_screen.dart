@@ -5,7 +5,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import '../services/admin_service.dart';
 import '../theme/app_theme.dart';
-import '../config/app_config.dart';
 
 class AdminDashboardScreen extends ConsumerStatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -254,7 +253,7 @@ class _VerificationsTabState extends State<_VerificationsTab> {
                       itemBuilder: (context, i) {
                         final u = _users[i];
                         final docUrl = u['verificationDoc'];
-                        final fullUrl = docUrl != null ? '${AppConfig.apiBaseUrl.replaceAll('/api', '')}$docUrl' : null;
+                        final fullUrl = docUrl != null ? '${AppColors.staticOrigin}$docUrl' : null;
                         
                         return Card(
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

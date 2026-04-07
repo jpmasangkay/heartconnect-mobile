@@ -123,7 +123,7 @@ class JobService extends ApiService {
   // ── Socket ───────────────────────────────────────────────────────────────
 
   bool _listenersRegistered = false;
-  final _newJobController = StreamController<void>.broadcast();
+  StreamController<void> _newJobController = StreamController<void>.broadcast();
   Stream<void> get onNewJob => _newJobController.stream;
 
   void setupSocketListeners() {
@@ -147,5 +147,6 @@ class JobService extends ApiService {
   void disposeSocket() {
     _newJobController.close();
     _listenersRegistered = false;
+    _newJobController = StreamController<void>.broadcast();
   }
 }

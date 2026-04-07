@@ -257,11 +257,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
     // Nothing to navigate to
     if (target == null || target.isEmpty) {
-      debugPrint('Notification tap → no link or relatedJob to navigate to');
+      assert(() { debugPrint('Notification tap → no link or relatedJob to navigate to'); return true; }());
       return;
     }
 
-    debugPrint('Notification tap → navigating to: $target');
+    assert(() { debugPrint('Notification tap → navigating to: $target'); return true; }());
     try {
       // Shell routes must use go() so the MainScreen wrapper stays intact.
       // Detail routes (e.g. /jobs/abc123) use push() to overlay.
@@ -271,7 +271,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         context.push(target);
       }
     } catch (e) {
-      debugPrint('Navigation error on notification tap: $e');
+      assert(() { debugPrint('Navigation error on notification tap: $e'); return true; }());
     }
   }
 

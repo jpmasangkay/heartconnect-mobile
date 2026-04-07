@@ -13,7 +13,7 @@
 ///
 /// **Dev fallback:** if none of the above are set, `API_HOST` (host:port, no scheme)
 /// builds `http://$API_HOST/api` and a matching socket origin. Defaults to
-/// `127.0.0.1:5000` (local backend).
+/// `heartconnect.onrender.com` (production backend).
 abstract final class AppConfig {
   static String get apiBaseUrl {
     const vite = String.fromEnvironment('VITE_API_URL');

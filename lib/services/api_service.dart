@@ -4,6 +4,16 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../config/app_config.dart';
 
+/// Maximum file size allowed for uploads (10 MB).
+const int kMaxUploadBytes = 10 * 1024 * 1024;
+
+/// Allowed MIME-type prefixes for chat file attachments.
+const Set<String> kAllowedUploadExtensions = {
+  'jpg', 'jpeg', 'png', 'gif', 'webp', 'heic',
+  'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
+  'txt', 'csv', 'zip', 'rar',
+};
+
 /// HTTP API client for the mobile app.
 ///
 /// **Auth model:** Bearer JWT in `Authorization` header. This client stores the
@@ -24,8 +34,9 @@ class ApiService {
   
   static final Dio _sharedDio = Dio(BaseOptions(
     baseUrl: baseUrl,
-    connectTimeout: const Duration(seconds: 10),
-    receiveTimeout: const Duration(seconds: 10),
+    connectTimeout: const Duration(seconds: 15),
+    receiveTimeout: const Duration(seconds: 30),
+    sendTimeout: const Duration(seconds: 60),
     headers: {
       'Content-Type': 'application/json',
       'X-Platform': platform,
@@ -40,7 +51,7 @@ class ApiService {
     },
     onError: (DioException e, handler) {
       if (e.response?.statusCode == 401) {
-        debugPrint('API 401: token expired or invalidated');
+        assert(() { debugPrint('API 401: token expired or invalidated'); return true; }());
         clearToken();
         onAuthExpired?.call();
       }

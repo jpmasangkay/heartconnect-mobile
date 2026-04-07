@@ -9,6 +9,8 @@ import '../services/application_service.dart';
 import '../services/chat_service.dart';
 import '../models/job.dart';
 import '../models/application.dart';
+import '../models/user.dart';
+import '../theme/app_theme.dart';
 
 // ─────────────────────────────────────────────
 //  Helpers
@@ -59,23 +61,23 @@ class DashboardScreen extends ConsumerWidget {
 // ─────────────────────────────────────────────
 //  Shared design tokens
 // ─────────────────────────────────────────────
-const _ink = Color(0xFF1C3A28);       // deep forest
-const _parchment = Color(0xFFF8F5EE); // warm off-white
-const _rust = Color(0xFFC4622A);      // terracotta accent
-const _muted = Color(0xFF7A8C7B);
-const _rule = Color(0xFFCDD9C6);
+const _ink = AppColors.ink;
+const _parchment = AppColors.parchment;
+const _rust = AppColors.rust;
+const _muted = AppColors.muted;
+const _rule = AppColors.rule;
 
-TextStyle _label(double size, {Color color = _muted, FontWeight fw = FontWeight.w500}) =>
+TextStyle _label(double size, {Color color = AppColors.muted, FontWeight fw = FontWeight.w500}) =>
     GoogleFonts.inter(fontSize: size, color: color, fontWeight: fw);
 
-TextStyle _serif(double size, {Color color = _ink}) =>
+TextStyle _serif(double size, {Color color = AppColors.ink}) =>
     GoogleFonts.inter(fontSize: size, color: color, fontWeight: FontWeight.w800);
 
 // ─────────────────────────────────────────────
 //  STUDENT HOME
 // ─────────────────────────────────────────────
 class _StudentHome extends ConsumerStatefulWidget {
-  final dynamic user;
+  final User user;
   const _StudentHome({required this.user});
   @override
   ConsumerState<_StudentHome> createState() => _StudentHomeState();
@@ -272,7 +274,7 @@ class _StudentHomeState extends ConsumerState<_StudentHome> {
 //  CLIENT HOME
 // ─────────────────────────────────────────────
 class _ClientHome extends ConsumerStatefulWidget {
-  final dynamic user;
+  final User user;
   const _ClientHome({required this.user});
   @override
   ConsumerState<_ClientHome> createState() => _ClientHomeState();
@@ -313,14 +315,26 @@ class _ClientHomeState extends ConsumerState<_ClientHome> {
     try {
       await JobService.instance.closeJob(id);
       if (mounted) setState(() => _jobs = _jobs.map((j) => j.id == id ? _patchStatus(id, 'closed') : j).toList());
-    } catch (_) {}
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(JobService.instance.extractError(e))),
+        );
+      }
+    }
   }
 
   Future<void> _completeJob(String id) async {
     try {
       await JobService.instance.completeJob(id);
       if (mounted) setState(() => _jobs = _jobs.map((j) => j.id == id ? _patchStatus(id, 'completed') : j).toList());
-    } catch (_) {}
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(JobService.instance.extractError(e))),
+        );
+      }
+    }
   }
 
   @override

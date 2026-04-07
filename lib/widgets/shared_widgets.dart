@@ -218,7 +218,7 @@ class _SkeletonBoxState extends State<SkeletonBox> with SingleTickerProviderStat
         width: widget.width,
         height: widget.height,
         decoration: BoxDecoration(
-          color: AppColors.border.withValues(alpha: 0.1),
+          color: AppColors.border.withValues(alpha: _anim.value),
           borderRadius: BorderRadius.circular(widget.radius),
         ),
       ),
@@ -301,7 +301,7 @@ class _PulseDotState extends State<_PulseDot> with SingleTickerProviderStateMixi
         width: 7,
         height: 7,
         decoration: BoxDecoration(
-          color: AppColors.accent.withValues(alpha: 0.1),
+          color: AppColors.accent.withValues(alpha: 0.4 + 0.6 * _ctrl.value),
           shape: BoxShape.circle,
         ),
       ),
