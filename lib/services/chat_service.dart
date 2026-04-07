@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:dio/dio.dart';
 import '../models/conversation.dart';
 import 'api_service.dart';
 import 'socket_service.dart';
@@ -62,6 +63,33 @@ class ChatService extends ApiService {
 
   Future<Message> sendMessageRest(String conversationId, String content) async {
     final res = await dio.post('/conversations/$conversationId/messages', data: {'content': content});
+    return Message.fromJson(Map<String, dynamic>.from(res.data as Map));
+  }
+
+  Future<Message> sendMessageWithFile({
+    required String conversationId,
+    String content = '',
+    String? filePath,
+    List<int>? fileBytes,
+    String? fileName,
+  }) async {
+    final formData = FormData.fromMap({
+      'content': content,
+    });
+
+    if (filePath != null) {
+      formData.files.add(MapEntry(
+        'file',
+        await MultipartFile.fromFile(filePath, filename: fileName ?? filePath.split('/').last),
+      ));
+    } else if (fileBytes != null && fileName != null) {
+      formData.files.add(MapEntry(
+        'file',
+        MultipartFile.fromBytes(fileBytes, filename: fileName),
+      ));
+    }
+
+    final res = await dio.post('/conversations/$conversationId/messages', data: formData);
     return Message.fromJson(Map<String, dynamic>.from(res.data as Map));
   }
 

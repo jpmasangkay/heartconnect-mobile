@@ -2,6 +2,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import '../config/app_config.dart';
 import '../providers/auth_provider.dart';
 import '../services/chat_service.dart';
 import '../models/conversation.dart';
@@ -29,6 +35,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   String? _typingPeerName;
   bool _socketConnected = false;
   bool _socketConnecting = true;
+  bool _isSending = false;
+  XFile? _selectedFile;
   final _inputCtrl = TextEditingController();
   final _scrollCtrl = ScrollController();
   Timer? _typingTimer;
@@ -111,7 +119,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         }
 
         if (knownConvo) {
-          _conversations = _conversations.map((c) {
+          final updated = _conversations.map((c) {
             if (c.id == msg.conversationId) {
               return Conversation(
                 id: c.id,
@@ -125,9 +133,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             }
             return c;
           }).toList();
+          // Only re-sort if the updated conversation is not already first
+          final movedIdx = updated.indexWhere((c) => c.id == msg.conversationId);
+          if (movedIdx > 0) updated.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+          _conversations = updated;
         }
-
-        _conversations.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
       });
 
       if (!knownConvo) {
@@ -283,20 +293,24 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   Future<void> _send() async {
     final content = _inputCtrl.text.trim();
-    if (content.isEmpty || _active == null) return;
-    _inputCtrl.clear();
-    _lastTypingEmit = null;
+    if ((content.isEmpty && _selectedFile == null) || _active == null || _isSending) return;
+
+    final fileToSend = _selectedFile;
     final me = ref.read(authProvider).user!;
 
     final optimistic = Message(
       id: 'opt-${DateTime.now().millisecondsSinceEpoch}',
       conversationId: _active!.id,
       sender: me,
-      content: content,
+      content: content.isEmpty && fileToSend != null ? 'Attachment' : content,
       read: false,
       createdAt: DateTime.now().toIso8601String(),
     );
+
+    // Single setState: lock send button, clear file, add optimistic message
     setState(() {
+      _isSending = true;
+      _selectedFile = null;
       _messages = [..._messages, optimistic];
       _conversations = _conversations.map((c) {
         if (c.id == _active!.id) {
@@ -309,19 +323,36 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         return c;
       }).toList();
     });
+
+    _inputCtrl.clear();
+    _lastTypingEmit = null;
     _scrollDown();
 
     try {
-      // Use REST as the single source of truth for send; backend broadcasts to sockets.
-      final real = await _chat.sendMessageRest(_active!.id, content);
+      final real = fileToSend != null
+          ? await _chat.sendMessageWithFile(
+              conversationId: _active!.id,
+              content: content,
+              filePath: kIsWeb ? null : fileToSend.path,
+              fileName: fileToSend.name,
+              fileBytes: kIsWeb ? await fileToSend.readAsBytes() : null,
+            )
+          : await _chat.sendMessageRest(_active!.id, content);
+          
       if (!mounted) return;
-      setState(() => _messages = _messages.map((m) => m.id == optimistic.id ? real : m).toList());
+      setState(() {
+        _messages = _messages.map((m) => m.id == optimistic.id ? real : m).toList();
+        _isSending = false;
+      });
     } catch (e) {
       if (!mounted) return;
-      // If the socket already delivered and replaced the optimistic message,
-      // the send actually succeeded — suppress the error.
+      setState(() => _isSending = false);
       final stillPending = _messages.any((m) => m.id == optimistic.id);
       if (!stillPending) return;
+      // Remove the stuck optimistic message so the list stays clean
+      setState(() {
+        _messages = _messages.where((m) => m.id != optimistic.id).toList();
+      });
       debugPrint('SEND_ERR: ${_chat.extractError(e)}');
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
@@ -335,6 +366,41 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           ),
         );
     }
+  }
+
+  Future<void> _pickAttachment() async {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.image),
+              title: const Text('Photo'),
+              onTap: () async {
+                Navigator.pop(ctx);
+                final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
+                if (picked != null) setState(() => _selectedFile = picked);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.insert_drive_file),
+              title: const Text('Document'),
+              onTap: () async {
+                Navigator.pop(ctx);
+                final result = await FilePicker.platform.pickFiles(type: FileType.any);
+                if (result != null && result.files.single.path != null) {
+                  setState(() => _selectedFile = XFile(result.files.single.path!));
+                } else if (result != null && result.files.single.bytes != null) {
+                  setState(() => _selectedFile = XFile.fromData(result.files.single.bytes!, name: result.files.single.name));
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _handleTyping() {
@@ -677,17 +743,46 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       );
                     },
                   ),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Expanded(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxHeight: 120),
-                          child: TextField(
-                            controller: _inputCtrl,
-                            onChanged: (_) => _handleTyping(),
-                            onSubmitted: (_) => _send(),
-                            maxLines: null,
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        if (_selectedFile == null)
+                          IconButton(
+                            icon: const Icon(Icons.attach_file, color: AppColors.textMuted),
+                            padding: const EdgeInsets.only(bottom: 8),
+                            constraints: const BoxConstraints(),
+                            onPressed: _pickAttachment,
+                          ),
+                        if (_selectedFile == null)
+                          const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (_selectedFile != null)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  margin: const EdgeInsets.only(bottom: 8),
+                                  decoration: BoxDecoration(color: AppColors.creamDark, borderRadius: BorderRadius.circular(12)),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.insert_drive_file, size: 16, color: AppColors.navy),
+                                      const SizedBox(width: 8),
+                                      Flexible(child: Text(_selectedFile!.name, style: const TextStyle(fontSize: 12), overflow: TextOverflow.ellipsis)),
+                                      const SizedBox(width: 8),
+                                      InkWell(onTap: () => setState(() => _selectedFile = null), child: const Icon(Icons.close, size: 16, color: AppColors.textMuted)),
+                                    ],
+                                  ),
+                                ),
+                              ConstrainedBox(
+                                constraints: const BoxConstraints(maxHeight: 120),
+                                child: TextField(
+                                  controller: _inputCtrl,
+                                  onChanged: (_) => _handleTyping(),
+                                  onSubmitted: (_) => _send(),
+                                  maxLines: null,
                             textInputAction: TextInputAction.send,
                             cursorColor: AppColors.navy,
                             cursorRadius: const Radius.circular(2),
@@ -729,12 +824,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       ValueListenableBuilder(
                         valueListenable: _inputCtrl,
                         builder: (_, v, __) {
-                          final hasText = v.text.trim().isNotEmpty;
+                          final hasContent = v.text.trim().isNotEmpty || _selectedFile != null;
                           return AnimatedOpacity(
-                            opacity: hasText ? 1.0 : 0.35,
+                            opacity: hasContent && !_isSending ? 1.0 : 0.35,
                             duration: const Duration(milliseconds: 180),
                             child: GestureDetector(
-                              onTap: hasText ? _send : null,
+                              onTap: hasContent && !_isSending ? _send : null,
                               child: Container(
                                 width: 40,
                                 height: 40,
@@ -964,12 +1059,54 @@ class _MessageBubble extends StatelessWidget {
                     ),
                     boxShadow: isMe ? [] : AppColors.cardShadowLight,
                   ),
-                  child: Text(
-                    msg.content,
-                    style: TextStyle(
-                        fontSize: 14,
-                        color: isMe ? Colors.white : AppColors.textBody,
-                        height: 1.45),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (msg.hasFile) ...[
+                        if (msg.isImage)
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: CachedNetworkImage(
+                              imageUrl: '${AppConfig.apiBaseUrl.replaceAll('/api', '')}${msg.fileUrl}',
+                              placeholder: (context, url) => const SizedBox(width: 150, height: 150, child: Center(child: CircularProgressIndicator())),
+                              errorWidget: (context, url, error) => const SizedBox(width: 150, height: 150, child: Center(child: Icon(Icons.broken_image))),
+                              fit: BoxFit.cover,
+                              width: 200,
+                            ),
+                          )
+                        else
+                          GestureDetector(
+                            onTap: () async {
+                              final url = Uri.parse('${AppConfig.apiBaseUrl.replaceAll('/api', '')}${msg.fileUrl}');
+                              if (await canLaunchUrl(url)) await launchUrl(url);
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: isMe ? Colors.white.withAlpha(51) : AppColors.navy.withAlpha(20),
+                                borderRadius: BorderRadius.circular(8)
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.insert_drive_file_rounded, color: isMe ? Colors.white : AppColors.navy, size: 20),
+                                  const SizedBox(width: 8),
+                                  Flexible(child: Text(msg.fileName ?? 'File', style: TextStyle(color: isMe ? Colors.white : AppColors.navy, decoration: TextDecoration.underline), overflow: TextOverflow.ellipsis)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        if (msg.content.isNotEmpty) const SizedBox(height: 8),
+                      ],
+                      if (msg.content.isNotEmpty)
+                        Text(
+                          msg.content,
+                          style: TextStyle(
+                              fontSize: 14,
+                              color: isMe ? Colors.white : AppColors.textBody,
+                              height: 1.45),
+                        ),
+                    ],
                   ),
                 ),
               ),

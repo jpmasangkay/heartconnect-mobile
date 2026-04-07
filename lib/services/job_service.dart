@@ -132,6 +132,9 @@ class JobService extends ApiService {
     
     final socketSvc = SocketService.instance;
 
+    socketSvc.on('job:created', (_) {
+      _newJobController.add(null);
+    });
     socketSvc.on('job:new', (_) {
       _newJobController.add(null);
     });

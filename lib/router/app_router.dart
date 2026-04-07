@@ -25,6 +25,7 @@ import '../screens/blocked_users_screen.dart';
 import '../screens/terms_screen.dart';
 import '../screens/privacy_screen.dart';
 import '../screens/reviews_screen.dart';
+import '../screens/admin_dashboard_screen.dart';
 
 class RouterNotifier extends ChangeNotifier {
   final Ref _ref;
@@ -65,6 +66,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Role-based guardrails
       final role = auth.user?.role;
       if (role == 'client' && path == '/saved-jobs') return '/profile';
+      if (role != 'admin' && path == '/admin') return '/dashboard';
       return null;
     },
     routes: [
@@ -131,6 +133,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/verification', builder: (_, __) => const VerificationScreen()),
       GoRoute(path: '/two-factor', builder: (_, __) => const TwoFactorScreen()),
       GoRoute(path: '/blocked-users', builder: (_, __) => const BlockedUsersScreen()),
+      GoRoute(path: '/admin', builder: (_, __) => const AdminDashboardScreen()),
     ],
   );
 });

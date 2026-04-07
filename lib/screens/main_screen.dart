@@ -38,16 +38,21 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   final Set<String> _shownNotifIds = {};
   bool _firstFetch = true;
   final List<StreamSubscription> _subs = [];
+  Timer? _pollTimer;
 
   @override
   void initState() {
     super.initState();
     _initNotifSocket();
     _fetch();
+    // Periodic fallback poll: keeps badges accurate after missed socket events
+    // (e.g. brief disconnect, app backgrounded).
+    _pollTimer = Timer.periodic(const Duration(minutes: 2), (_) => _fetch());
   }
 
   @override
   void dispose() {
+    _pollTimer?.cancel();
     for (final s in _subs) {
       s.cancel();
     }
@@ -103,35 +108,38 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
   /// Fallback HTTP polling for badge count accuracy.
   Future<void> _fetch() async {
+    // Fire both requests in parallel — they are fully independent.
+    final results = await Future.wait([
+      ChatService.instance.getUnreadCount().catchError((_) => 0),
+      _notifService.getUnreadCount().catchError((_) => 0),
+    ]);
+
+    final chatCount = results[0];
+    final notifCount = results[1];
+
+    if (!mounted) return;
+
     // ── Chat unread ──
-    try {
-      final c = await ChatService.instance.getUnreadCount();
-      if (mounted && c != _unreadChat) {
-        // Show push for new chat messages
-        if (!_firstFetch && c > _unreadChat) {
-          final diff = c - _unreadChat;
-          _push.showNotification(
-            id: 'chat_unread'.hashCode,
-            title: 'New Message${diff > 1 ? 's' : ''}',
-            body: 'You have $diff unread message${diff > 1 ? 's' : ''}',
-            payload: '/chat',
-          );
-        }
-        setState(() => _unreadChat = c);
+    if (chatCount != _unreadChat) {
+      if (!_firstFetch && chatCount > _unreadChat) {
+        final diff = chatCount - _unreadChat;
+        _push.showNotification(
+          id: 'chat_unread'.hashCode,
+          title: 'New Message${diff > 1 ? 's' : ''}',
+          body: 'You have $diff unread message${diff > 1 ? 's' : ''}',
+          payload: '/chat',
+        );
       }
-    } catch (_) {}
+      setState(() => _unreadChat = chatCount);
+    }
 
     // ── Notification unread count sync ──
-    try {
-      final n = await _notifService.getUnreadCount();
-      if (mounted && n != _unreadNotif) {
-        // If count increased and socket missed it, fetch latest to push
-        if (!_firstFetch && n > _unreadNotif) {
-          _showNewNotifications();
-        }
-        setState(() => _unreadNotif = n);
+    if (notifCount != _unreadNotif) {
+      if (!_firstFetch && notifCount > _unreadNotif) {
+        _showNewNotifications();
       }
-    } catch (_) {}
+      setState(() => _unreadNotif = notifCount);
+    }
 
     _firstFetch = false;
   }

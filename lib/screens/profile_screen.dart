@@ -323,6 +323,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   children: [
                     const SectionLabel('Settings'),
                     const SizedBox(height: 10),
+                    if (user.role == 'admin')
+                      _SettingsItem(
+                        icon: Icons.admin_panel_settings_rounded,
+                        label: 'Admin Dashboard',
+                        onTap: () => context.push('/admin'),
+                      ),
                     if (user.role != 'client')
                       _SettingsItem(
                         icon: Icons.bookmark_rounded,

@@ -71,10 +71,16 @@ class ApiService {
       if (e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.sendTimeout ||
           e.type == DioExceptionType.receiveTimeout) {
-        return 'Server did not respond in time. Check VITE_API_URL / API_BASE_URL / API_HOST ($baseUrl) and that the backend is running.';
+        if (kDebugMode) {
+          return 'Server did not respond in time. Check VITE_API_URL / API_BASE_URL / API_HOST ($baseUrl) and that the backend is running.';
+        }
+        return 'Server did not respond in time. Check your connection and try again.';
       }
       if (e.type == DioExceptionType.connectionError) {
-        return 'Cannot reach server at $baseUrl. Set --dart-define=VITE_API_URL=... (or API_BASE_URL, or API_HOST for LAN dev).';
+        if (kDebugMode) {
+          return 'Cannot reach server at $baseUrl. Set --dart-define=VITE_API_URL=... (or API_BASE_URL, or API_HOST for LAN dev).';
+        }
+        return 'Cannot reach the server. Check your connection and try again.';
       }
       if (e.response?.statusCode == 401) {
         return 'Session expired. Please log in again.';

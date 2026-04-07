@@ -45,6 +45,7 @@ class SocketService {
     );
 
     _socket!.onConnect((_) {
+      if (_disposed) return;
       debugPrint('Master Socket connected');
       for (final room in _joinedRooms) {
         _socket?.emit('join_room', room);
@@ -55,6 +56,7 @@ class SocketService {
     });
 
     _socket!.onDisconnect((reason) {
+      if (_disposed) return;
       debugPrint('Master Socket disconnected: $reason');
       for (final listener in _onDisconnectListeners) {
         listener();
@@ -62,10 +64,12 @@ class SocketService {
     });
 
     _socket!.onConnectError((err) {
+      if (_disposed) return;
       debugPrint('Master Socket connect error: $err');
     });
 
     _socket!.onError((err) {
+      if (_disposed) return;
       debugPrint('Master Socket error: $err');
     });
 
@@ -110,6 +114,12 @@ class SocketService {
 
   void off(String event, Function(dynamic) callback) {
     _eventListeners[event]?.remove(callback);
+    // When the last listener is removed, tear down the socket binding too
+    // so the event handler doesn't linger and accumulate over reconnects.
+    if (_eventListeners[event]?.isEmpty ?? false) {
+      _eventListeners.remove(event);
+      _socket?.off(event);
+    }
   }
 
   void joinRoom(String roomId) {

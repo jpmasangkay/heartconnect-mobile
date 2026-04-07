@@ -20,18 +20,23 @@ class HeartConnectApp extends ConsumerStatefulWidget {
 }
 
 class _HeartConnectAppState extends ConsumerState<HeartConnectApp> {
-  bool _pushInitialized = false;
+  @override
+  void initState() {
+    super.initState();
+    final isFlutterTest = !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
+    if (!isFlutterTest) {
+      // Defer until the first frame so the router provider is ready.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final router = ref.read(routerProvider);
+        PushNotificationService.instance.init(router: router);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final router = ref.watch(routerProvider);
-
-    // Initialize push notifications once we have the router
-    final isFlutterTest = !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
-    if (!_pushInitialized && !isFlutterTest) {
-      _pushInitialized = true;
-      PushNotificationService.instance.init(router: router);
-    }
 
     return MaterialApp.router(
       title: 'HeartConnect',
