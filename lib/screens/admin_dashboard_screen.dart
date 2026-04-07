@@ -211,10 +211,12 @@ class _VerificationsTabState extends State<_VerificationsTab> {
     setState(() => _loading = true);
     try {
       final list = await _adminService.getPendingVerifications();
-      if (mounted) setState(() {
-        _users = list;
-        _loading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _users = list;
+          _loading = false;
+        });
+      }
     } catch (_) {
       if (mounted) setState(() => _loading = false);
     }

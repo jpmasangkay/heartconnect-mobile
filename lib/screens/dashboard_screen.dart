@@ -312,14 +312,14 @@ class _ClientHomeState extends ConsumerState<_ClientHome> {
   Future<void> _closeJob(String id) async {
     try {
       await JobService.instance.closeJob(id);
-      setState(() => _jobs = _jobs.map((j) => j.id == id ? _patchStatus(id, 'closed') : j).toList());
+      if (mounted) setState(() => _jobs = _jobs.map((j) => j.id == id ? _patchStatus(id, 'closed') : j).toList());
     } catch (_) {}
   }
 
   Future<void> _completeJob(String id) async {
     try {
       await JobService.instance.completeJob(id);
-      setState(() => _jobs = _jobs.map((j) => j.id == id ? _patchStatus(id, 'completed') : j).toList());
+      if (mounted) setState(() => _jobs = _jobs.map((j) => j.id == id ? _patchStatus(id, 'completed') : j).toList());
     } catch (_) {}
   }
 

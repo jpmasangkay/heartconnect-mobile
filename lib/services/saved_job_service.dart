@@ -26,8 +26,8 @@ class SavedJobService extends ApiService {
     }
     return (
       data: list,
-      total: raw['total'] as int? ?? 0,
-      pages: raw['pages'] as int? ?? 1,
+      total: (raw['total'] as num?)?.toInt() ?? 0,
+      pages: (raw['pages'] as num?)?.toInt() ?? 1,
     );
   }
 

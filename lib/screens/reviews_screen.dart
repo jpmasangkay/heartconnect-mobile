@@ -31,7 +31,10 @@ class _ReviewsScreenState extends ConsumerState<ReviewsScreen> {
 
   Future<void> _load() async {
     final me = ref.read(authProvider).user;
-    if (me == null) return;
+    if (me == null) {
+      if (mounted) setState(() => _loading = false);
+      return;
+    }
     setState(() => _loading = true);
     try {
       final results = await Future.wait([

@@ -40,7 +40,9 @@ class Application {
       job: job,
       applicant: applicant,
       coverLetter: json['coverLetter'] ?? '',
-      proposedRate: (json['proposedRate'] ?? 0).toDouble(),
+      proposedRate: (json['proposedRate'] is num)
+          ? (json['proposedRate'] as num).toDouble()
+          : double.tryParse(json['proposedRate']?.toString() ?? '') ?? 0.0,
       status: json['status'] ?? 'pending',
       createdAt: json['createdAt'],
       updatedAt: json['updatedAt'],

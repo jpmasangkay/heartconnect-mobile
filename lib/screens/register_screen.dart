@@ -70,6 +70,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           );
       if (mounted) context.go('/dashboard');
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _error = ref.read(authServiceProvider).extractError(e);
         _loading = false;

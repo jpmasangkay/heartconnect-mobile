@@ -55,8 +55,15 @@ class ReviewService extends ApiService {
 
   Future<List<PendingReview>> getPendingReviews() async {
     final res = await dio.get('/reviews/pending');
-    final data = res.data;
-    final list = data is List ? data : <dynamic>[];
+    final rawData = res.data;
+    final List<dynamic> list;
+    if (rawData is List) {
+      list = rawData;
+    } else if (rawData is Map) {
+      list = (rawData['data'] as List?) ?? [];
+    } else {
+      list = [];
+    }
     return list.whereType<Map>().map((e) {
       final m = Map<String, dynamic>.from(e);
       Job? job;

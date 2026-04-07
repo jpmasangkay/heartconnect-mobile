@@ -72,6 +72,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           setState(() => _unreadNotif = count);
         }
       }));
+
+      _subs.add(_notifSocket.onChatUnread.listen((count) {
+        if (mounted && count != _unreadChat) {
+          setState(() => _unreadChat = count);
+        }
+      }));
       
       _subs.add(_notifSocket.onConnect.listen((_) {
         debugPrint('Notification socket ready — real-time push active');

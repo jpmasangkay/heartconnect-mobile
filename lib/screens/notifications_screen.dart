@@ -36,6 +36,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   void _onScroll() {
+    if (!_scrollController.hasClients) return;
     if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200 &&
         !_loadingMore &&
         _page < _totalPages) {

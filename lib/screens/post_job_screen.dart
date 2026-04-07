@@ -15,6 +15,7 @@ class PostJobScreen extends ConsumerStatefulWidget {
 class _PostJobScreenState extends ConsumerState<PostJobScreen> {
   final _titleCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
+  final _categoryCtrl = TextEditingController();
   final _budgetCtrl = TextEditingController();
   final _skillCtrl = TextEditingController();
   String _budgetType = 'fixed';
@@ -27,6 +28,7 @@ class _PostJobScreenState extends ConsumerState<PostJobScreen> {
   void dispose() {
     _titleCtrl.dispose();
     _descCtrl.dispose();
+    _categoryCtrl.dispose();
     _budgetCtrl.dispose();
     _skillCtrl.dispose();
     super.dispose();
@@ -53,7 +55,7 @@ class _PostJobScreenState extends ConsumerState<PostJobScreen> {
         child: child!,
       ),
     );
-    if (picked != null) setState(() => _deadline = picked);
+    if (picked != null && mounted) setState(() => _deadline = picked);
   }
 
   Future<void> _submit() async {
@@ -68,8 +70,10 @@ class _PostJobScreenState extends ConsumerState<PostJobScreen> {
     final desc = _descCtrl.text.trim();
     final budget = double.tryParse(_budgetCtrl.text);
 
+    final category = _categoryCtrl.text.trim();
     if (title.length < 5) { if (!mounted) return; setState(() => _error = 'Job title must be at least 5 characters.'); return; }
     if (desc.length < 20) { if (!mounted) return; setState(() => _error = 'Description must be at least 20 characters.'); return; }
+    if (category.isEmpty) { if (!mounted) return; setState(() => _error = 'Please enter a job category.'); return; }
     if (budget == null || budget <= 0) { if (!mounted) return; setState(() => _error = 'Enter a valid budget.'); return; }
     if (_deadline == null) { if (!mounted) return; setState(() => _error = 'Please select a deadline.'); return; }
     if (_skills.isEmpty) { if (!mounted) return; setState(() => _error = 'Add at least one required skill.'); return; }
@@ -80,7 +84,7 @@ class _PostJobScreenState extends ConsumerState<PostJobScreen> {
       final job = await JobService.instance.createJob({
         'title': title,
         'description': desc,
-        'category': _skills.first,
+        'category': category,
         'budget': budget,
         'budgetType': _budgetType,
         'deadline': _deadline!.toIso8601String(),
@@ -168,6 +172,15 @@ class _PostJobScreenState extends ConsumerState<PostJobScreen> {
                       child: Text('${v.text.length} characters',
                           style: const TextStyle(fontSize: 10, color: AppColors.textMuted)),
                     ),
+                  ),
+
+                  const SizedBox(height: 16),
+                  _Label('Category *'),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: _categoryCtrl,
+                    decoration: const InputDecoration(hintText: 'e.g. Web Development, Graphic Design'),
+                    textInputAction: TextInputAction.next,
                   ),
 
                   const SizedBox(height: 16),

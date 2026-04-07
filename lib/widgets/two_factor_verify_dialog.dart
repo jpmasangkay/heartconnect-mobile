@@ -62,7 +62,11 @@ class _TwoFactorVerifyDialogState extends ConsumerState<TwoFactorVerifyDialog> {
           const SnackBar(content: Text('Code sent to your email')),
         );
       }
-    } catch (_) {}
+    } catch (e) {
+      if (mounted) {
+        setState(() => _error = 'Failed to resend code. Please try again.');
+      }
+    }
   }
 
   @override

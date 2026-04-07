@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../providers/auth_provider.dart';
 import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
@@ -46,7 +47,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   void _startEdit() {
-    final user = ref.read(authProvider).user!;
+    final user = ref.read(authProvider).user;
+    if (user == null) return;
     _nameCtrl.text = user.name;
     _bioCtrl.text = user.bio ?? '';
     _locationCtrl.text = user.location ?? '';
@@ -72,11 +74,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         'skills': _skills,
       });
       ref.read(authProvider.notifier).updateUser(updated);
+      if (!mounted) return;
       setState(() { _editing = false; _saving = false; _success = 'Profile updated successfully.'; });
       Future.delayed(const Duration(seconds: 3), () {
         if (mounted) setState(() => _success = null);
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _saving = false;
         _error = AuthService.instance.extractError(e);
@@ -413,21 +417,33 @@ class _DetailRow extends StatelessWidget {
   final bool isLink;
   const _DetailRow(this.icon, this.value, {this.isLink = false});
   @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: Row(children: [
-          Icon(icon, size: 14, color: AppColors.textMuted),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(value,
-                style: TextStyle(
-                    fontSize: 13,
-                    color: isLink ? AppColors.accent : AppColors.textBody,
-                    decoration: isLink ? TextDecoration.underline : null),
-                overflow: TextOverflow.ellipsis),
-          ),
-        ]),
-      );
+  Widget build(BuildContext context) {
+    final content = Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(children: [
+        Icon(icon, size: 14, color: AppColors.textMuted),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(value,
+              style: TextStyle(
+                  fontSize: 13,
+                  color: isLink ? AppColors.accent : AppColors.textBody,
+                  decoration: isLink ? TextDecoration.underline : null),
+              overflow: TextOverflow.ellipsis),
+        ),
+      ]),
+    );
+    if (!isLink) return content;
+    return GestureDetector(
+      onTap: () async {
+        final uri = Uri.tryParse(value);
+        if (uri != null && await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
+      },
+      child: content,
+    );
+  }
 }
 
 class _Lbl extends StatelessWidget {

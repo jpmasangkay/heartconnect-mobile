@@ -127,8 +127,10 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
     setState(() { _applying = true; _formError = null; });
     try {
       final app = await ApplicationService.instance.apply(widget.jobId, _coverCtrl.text.trim(), rate);
+      if (!mounted) return;
       setState(() { _myApplication = app; _applied = true; _applying = false; });
     } catch (e) {
+      if (!mounted) return;
       setState(() { _formError = ApplicationService.instance.extractError(e); _applying = false; });
     }
   }
@@ -136,7 +138,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
   Future<void> _updateStatus(String appId, String status) async {
     try {
       final updated = await ApplicationService.instance.updateStatus(appId, status);
-      setState(() { _applications = _applications.map((a) => a.id == appId ? updated : a).toList(); });
+      if (mounted) setState(() { _applications = _applications.map((a) => a.id == appId ? updated : a).toList(); });
     } catch (_) {}
   }
 
@@ -156,7 +158,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
     if (_myApplication == null) return;
     try {
       final updated = await ApplicationService.instance.withdraw(_myApplication!.id);
-      setState(() => _myApplication = updated);
+      if (mounted) setState(() => _myApplication = updated);
     } catch (_) {}
   }
 

@@ -17,6 +17,7 @@ class _EditJobScreenState extends State<EditJobScreen> {
   bool _deleting = false;
   bool _confirmDelete = false;
   String? _error;
+  String? _loadError;
 
   final _titleCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
@@ -24,6 +25,7 @@ class _EditJobScreenState extends State<EditJobScreen> {
   final _skillCtrl = TextEditingController();
   String _budgetType = 'fixed';
   String _status = 'open';
+  String _category = '';
   DateTime? _deadline;
   List<String> _skills = [];
 
@@ -45,18 +47,25 @@ class _EditJobScreenState extends State<EditJobScreen> {
   Future<void> _load() async {
     try {
       final job = await JobService.instance.getJob(widget.jobId);
+      if (!mounted) return;
       setState(() {
         _titleCtrl.text = job.title;
         _descCtrl.text = job.description;
         _budgetCtrl.text = job.budget.toStringAsFixed(0);
         _budgetType = job.budgetType;
         _status = job.status;
+        _category = job.category;
         _skills = List<String>.from(job.skills);
         try { _deadline = DateTime.parse(job.deadline); } catch (_) {}
         _loading = false;
       });
-    } catch (_) {
-      if (mounted) setState(() => _loading = false);
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _loadError = JobService.instance.extractError(e);
+        });
+      }
     }
   }
 
@@ -84,7 +93,7 @@ class _EditJobScreenState extends State<EditJobScreen> {
         child: child!,
       ),
     );
-    if (picked != null) setState(() => _deadline = picked);
+    if (picked != null && mounted) setState(() => _deadline = picked);
   }
 
   Future<void> _save() async {
@@ -96,18 +105,22 @@ class _EditJobScreenState extends State<EditJobScreen> {
       setState(() => _error = 'Add at least one required skill.');
       return;
     }
+    final budget = double.tryParse(_budgetCtrl.text.trim());
+    if (budget == null || budget <= 0) {
+      setState(() => _error = 'Enter a valid budget.');
+      return;
+    }
     setState(() { _saving = true; _error = null; });
     try {
       final payload = <String, dynamic>{
         'title': _titleCtrl.text.trim(),
         'description': _descCtrl.text.trim(),
-        'budget': double.parse(_budgetCtrl.text),
+        'budget': budget,
         'budgetType': _budgetType,
         'deadline': _deadline!.toIso8601String(),
         'status': _status,
         'skills': _skills,
-        // Keep in sync with create-job behavior so APIs that tie category to skills persist updates.
-        'category': _skills.first,
+        'category': _category,
       };
       await JobService.instance.updateJob(widget.jobId, payload);
       if (!mounted) return;
@@ -124,8 +137,14 @@ class _EditJobScreenState extends State<EditJobScreen> {
     try {
       await JobService.instance.deleteJob(widget.jobId);
       if (mounted) context.go('/dashboard');
-    } catch (_) {
-      if (mounted) context.go('/dashboard');
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _deleting = false;
+          _confirmDelete = false;
+          _error = JobService.instance.extractError(e);
+        });
+      }
     }
   }
 
@@ -136,6 +155,34 @@ class _EditJobScreenState extends State<EditJobScreen> {
         backgroundColor: AppColors.background,
         appBar: AppBar(backgroundColor: AppColors.background),
         body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_loadError != null) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: AppColors.background,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios, size: 16),
+            onPressed: () => context.canPop() ? context.pop() : context.go('/dashboard'),
+          ),
+          title: const Text('Edit Job'),
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              const Icon(Icons.error_outline, size: 48, color: AppColors.textMuted),
+              const SizedBox(height: 16),
+              Text(_loadError!, textAlign: TextAlign.center,
+                  style: const TextStyle(color: AppColors.textBody)),
+              const SizedBox(height: 16),
+              ElevatedButton(onPressed: () { setState(() { _loading = true; _loadError = null; }); _load(); },
+                  child: const Text('Retry')),
+            ]),
+          ),
+        ),
       );
     }
 

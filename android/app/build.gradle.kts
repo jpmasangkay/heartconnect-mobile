@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.heartconnect"
+    namespace = "com.heartconnect.app"
     compileSdk = 36
     ndkVersion = "27.0.12077973"
 
@@ -21,21 +21,39 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.heartconnect"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
+        applicationId = "com.heartconnect.app"
         minSdk = 24
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        // To use a keystore for release builds, create android/key.properties:
+        //   storeFile=<path-to-keystore.jks>
+        //   storePassword=<store-password>
+        //   keyAlias=<key-alias>
+        //   keyPassword=<key-password>
+        // Then uncomment the block below and remove the debug signingConfig in buildTypes.
+        //
+        // create("release") {
+        //     val props = java.util.Properties().also {
+        //         it.load(rootProject.file("key.properties").inputStream())
+        //     }
+        //     keyAlias = props["keyAlias"] as String
+        //     keyPassword = props["keyPassword"] as String
+        //     storeFile = file(props["storeFile"] as String)
+        //     storePassword = props["storePassword"] as String
+        // }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+            // IMPORTANT: Replace the debug signingConfig below with the release
+            // signingConfig once you have created a keystore (see signingConfigs above).
             signingConfig = signingConfigs.getByName("debug")
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }

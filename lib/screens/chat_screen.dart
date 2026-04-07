@@ -296,7 +296,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if ((content.isEmpty && _selectedFile == null) || _active == null || _isSending) return;
 
     final fileToSend = _selectedFile;
-    final me = ref.read(authProvider).user!;
+    final me = ref.read(authProvider).user;
+    if (me == null) return;
 
     final optimistic = Message(
       id: 'opt-${DateTime.now().millisecondsSinceEpoch}',
@@ -381,7 +382,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               onTap: () async {
                 Navigator.pop(ctx);
                 final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
-                if (picked != null) setState(() => _selectedFile = picked);
+                if (picked != null && mounted) setState(() => _selectedFile = picked);
               },
             ),
             ListTile(
@@ -390,6 +391,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               onTap: () async {
                 Navigator.pop(ctx);
                 final result = await FilePicker.platform.pickFiles(type: FileType.any);
+                if (!mounted) return;
                 if (result != null && result.files.single.path != null) {
                   setState(() => _selectedFile = XFile(result.files.single.path!));
                 } else if (result != null && result.files.single.bytes != null) {
@@ -812,15 +814,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 borderRadius: BorderRadius.circular(22),
                                 borderSide: BorderSide.none,
                               ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(22),
-                                borderSide: BorderSide.none,
-                              ),
-                            ),
+                               focusedBorder: OutlineInputBorder(
+                                 borderRadius: BorderRadius.circular(22),
+                                 borderSide: BorderSide.none,
+                               ),
+                             ),
+                           ),
+                         ),
+                            ],
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
+                       const SizedBox(width: 8),
                       ValueListenableBuilder(
                         valueListenable: _inputCtrl,
                         builder: (_, v, __) {

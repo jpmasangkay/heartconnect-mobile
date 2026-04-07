@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
 import '../services/review_service.dart';
@@ -345,19 +346,31 @@ class _Row extends StatelessWidget {
   final bool isLink;
   const _Row(this.icon, this.value, {this.isLink = false});
   @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: Row(children: [
-          Icon(icon, size: 14, color: AppColors.textMuted),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(value,
-                style: TextStyle(
-                    fontSize: 13,
-                    color: isLink ? AppColors.accent : AppColors.textBody,
-                    decoration: isLink ? TextDecoration.underline : null),
-                overflow: TextOverflow.ellipsis),
-          ),
-        ]),
-      );
+  Widget build(BuildContext context) {
+    final content = Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(children: [
+        Icon(icon, size: 14, color: AppColors.textMuted),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(value,
+              style: TextStyle(
+                  fontSize: 13,
+                  color: isLink ? AppColors.accent : AppColors.textBody,
+                  decoration: isLink ? TextDecoration.underline : null),
+              overflow: TextOverflow.ellipsis),
+        ),
+      ]),
+    );
+    if (!isLink) return content;
+    return GestureDetector(
+      onTap: () async {
+        final uri = Uri.tryParse(value);
+        if (uri != null && await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
+      },
+      child: content,
+    );
+  }
 }

@@ -11,6 +11,7 @@ class NotificationSocketService extends ApiService {
 
   final _notificationController = StreamController<app.AppNotification>.broadcast();
   final _unreadCountController = StreamController<int>.broadcast();
+  final _chatUnreadController = StreamController<int>.broadcast();
   final _connectController = StreamController<void>.broadcast();
   final _disconnectController = StreamController<void>.broadcast();
 
@@ -18,6 +19,7 @@ class NotificationSocketService extends ApiService {
 
   Stream<app.AppNotification> get onNotification => _notificationController.stream;
   Stream<int> get onUnreadCount => _unreadCountController.stream;
+  Stream<int> get onChatUnread => _chatUnreadController.stream;
   Stream<void> get onConnect => _connectController.stream;
   Stream<void> get onDisconnect => _disconnectController.stream;
 
@@ -74,6 +76,21 @@ class NotificationSocketService extends ApiService {
 
     socketSvc.on('chat:unread', (data) {
       debugPrint('Received chat:unread event: $data');
+      if (data != null) {
+        try {
+          int count;
+          if (data is int) {
+            count = data;
+          } else if (data is Map) {
+            count = (data['count'] ?? data['unreadCount'] ?? 0) as int;
+          } else {
+            count = int.tryParse(data.toString()) ?? 0;
+          }
+          _chatUnreadController.add(count);
+        } catch (e) {
+          debugPrint('Error parsing chat:unread payload: $e');
+        }
+      }
     });
   }
 
@@ -82,6 +99,7 @@ class NotificationSocketService extends ApiService {
   void disposeSocket() {
     _notificationController.close();
     _unreadCountController.close();
+    _chatUnreadController.close();
     _connectController.close();
     _disconnectController.close();
     _listenersRegistered = false;
