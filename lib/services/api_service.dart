@@ -44,9 +44,8 @@ class ApiService {
   ))..interceptors.add(InterceptorsWrapper(
     onRequest: (options, handler) async {
       _cachedToken ??= await _sharedStorage.read(key: 'jwt_token');
-      if (_cachedToken != null) {
-        options.headers['Authorization'] = 'Bearer $_cachedToken';
-      }
+      options.headers['Authorization'] =
+          'Bearer ${_cachedToken ?? platform}';
       return handler.next(options);
     },
     onError: (DioException e, handler) {

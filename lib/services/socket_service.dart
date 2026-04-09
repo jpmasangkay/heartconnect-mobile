@@ -50,6 +50,7 @@ class SocketService {
           .setReconnectionDelayMax(15000)
           .setTimeout(10000)
           .setAuth({'token': token, 'platform': ApiService.platform})
+          .setExtraHeaders({'Authorization': 'Bearer $token'})
           .build(),
     );
 

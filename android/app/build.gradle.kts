@@ -28,6 +28,7 @@ android {
         versionName = flutter.versionName
     }
 
+
     signingConfigs {
         // To use a keystore for release builds, create android/key.properties:
         //   storeFile=<path-to-keystore.jks>

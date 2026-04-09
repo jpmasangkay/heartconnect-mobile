@@ -1,4 +1,4 @@
-package com.example.heartconnect
+package com.heartconnect.app
 
 import io.flutter.embedding.android.FlutterActivity
 
