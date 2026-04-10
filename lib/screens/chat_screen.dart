@@ -38,6 +38,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   bool _socketConnecting = true;
   bool _isSending = false;
   XFile? _selectedFile;
+  /// IDs of messages confirmed via REST response — used to de-dup against socket echoes.
+  final Set<String> _confirmedMessageIds = {};
   final _inputCtrl = TextEditingController();
   final _scrollCtrl = ScrollController();
   Timer? _typingTimer;
@@ -102,6 +104,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     _subs.add(_chat.onMessage.listen((msg) {
       if (!mounted) return;
 
+      // Skip socket echoes for messages we already confirmed via REST response.
+      if (_confirmedMessageIds.remove(msg.id)) return;
+
       final isActiveConvo = _active != null && msg.conversationId == _active!.id;
       final knownConvo = _conversations.any((c) => c.id == msg.conversationId);
 
@@ -117,8 +122,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             // Try to match the oldest optimistic message from this sender with same content
             final optIdx = _messages.indexWhere((m) =>
                 m.id.startsWith('opt-') &&
-                m.sender?.id == msg.sender?.id &&
-                m.content == msg.content);
+                m.sender?.id == msg.sender?.id);
             if (optIdx >= 0) {
               _messages = List.of(_messages)..[optIdx] = msg;
             } else {
@@ -395,6 +399,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           : await _chat.sendMessageRest(_active!.id, content);
           
       if (!mounted) return;
+      // Track confirmed ID so the socket echo is ignored.
+      _confirmedMessageIds.add(real.id);
       setState(() {
         _messages = _messages.map((m) => m.id == optimistic.id ? real : m).toList();
         _isSending = false;
@@ -1122,14 +1128,20 @@ class _MessageBubble extends StatelessWidget {
                     children: [
                       if (msg.hasFile) ...[
                         if (msg.isImage)
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: CachedNetworkImage(
-                              imageUrl: '${AppColors.staticOrigin}${msg.fileUrl}',
-                              placeholder: (context, url) => const SizedBox(width: 150, height: 150, child: Center(child: CircularProgressIndicator())),
-                              errorWidget: (context, url, error) => const SizedBox(width: 150, height: 150, child: Center(child: Icon(Icons.broken_image))),
-                              fit: BoxFit.cover,
-                              width: 200,
+                          GestureDetector(
+                            onTap: () => _showImageModal(context, '${AppColors.staticOrigin}${msg.fileUrl}'),
+                            child: Hero(
+                              tag: 'chat_image_${msg.id}',
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: CachedNetworkImage(
+                                  imageUrl: '${AppColors.staticOrigin}${msg.fileUrl}',
+                                  placeholder: (context, url) => const SizedBox(width: 150, height: 150, child: Center(child: CircularProgressIndicator())),
+                                  errorWidget: (context, url, error) => const SizedBox(width: 150, height: 150, child: Center(child: Icon(Icons.broken_image))),
+                                  fit: BoxFit.cover,
+                                  width: 200,
+                                ),
+                              ),
                             ),
                           )
                         else
@@ -1187,6 +1199,14 @@ class _MessageBubble extends StatelessWidget {
     );
   }
 
+  static void _showImageModal(BuildContext context, String imageUrl) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black87,
+      builder: (ctx) => _FullScreenImageViewer(imageUrl: imageUrl),
+    );
+  }
+
   String _formatTime(String iso) {
     try {
       final d = DateTime.parse(iso).toLocal();
@@ -1234,6 +1254,55 @@ class _DateDivider extends StatelessWidget {
         ),
         const Expanded(child: Divider()),
       ]),
+    );
+  }
+}
+
+// ── Full-Screen Image Viewer ────────────────────────────────────────────────
+class _FullScreenImageViewer extends StatelessWidget {
+  final String imageUrl;
+  const _FullScreenImageViewer({required this.imageUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.of(context).pop(),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Stack(
+          children: [
+            Center(
+              child: InteractiveViewer(
+                minScale: 0.5,
+                maxScale: 4.0,
+                child: CachedNetworkImage(
+                  imageUrl: imageUrl,
+                  placeholder: (_, __) => const Center(
+                    child: CircularProgressIndicator(color: Colors.white),
+                  ),
+                  errorWidget: (_, __, ___) => const Center(
+                    child: Icon(Icons.broken_image, color: Colors.white54, size: 64),
+                  ),
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 8,
+              right: 12,
+              child: Material(
+                color: Colors.black45,
+                shape: const CircleBorder(),
+                clipBehavior: Clip.antiAlias,
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white, size: 24),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
