@@ -76,6 +76,23 @@ class ApiService {
     await _sharedStorage.delete(key: 'jwt_token');
   }
 
+  /// Patterns that indicate a raw server-side JavaScript / Node.js crash message
+  /// that should never be shown verbatim to the user.
+  static final _serverCrashPattern = RegExp(
+    r'Cannot read propert|is not a function|is not defined|'
+    r'ECONNREFUSED|ENOTFOUND|ETIMEDOUT|'
+    r'TypeError|ReferenceError|SyntaxError|RangeError|'
+    r'Internal Server Error|MongoServerError|BSON',
+    caseSensitive: false,
+  );
+
+  static const _friendlyServerError =
+      'Something went wrong on our end. Please try again later.';
+
+  /// Returns `true` when the message looks like a raw server-side crash rather
+  /// than a user-facing validation error.
+  static bool _isServerCrash(String msg) => _serverCrashPattern.hasMatch(msg);
+
   String extractError(dynamic e) {
     if (e is DioException) {
       if (e.type == DioExceptionType.connectionTimeout ||
@@ -102,15 +119,28 @@ class ApiService {
         }
         return 'Too many attempts right now. Please wait a minute and try again.';
       }
+      // 500-class errors are always server bugs — give a friendly message.
+      final statusCode = e.response?.statusCode ?? 0;
+      if (statusCode >= 500) {
+        assert(() { debugPrint('API $statusCode: ${e.response?.data}'); return true; }());
+        return _friendlyServerError;
+      }
       final data = e.response?.data;
       if (data is Map) {
         if (data['errors'] is List) {
-          return (data['errors'] as List).join(' · ');
+          final joined = (data['errors'] as List).join(' · ');
+          return _isServerCrash(joined) ? _friendlyServerError : joined;
         }
-        return data['message']?.toString() ?? e.message ?? 'Request failed';
+        final msg = data['message']?.toString();
+        if (msg != null) {
+          return _isServerCrash(msg) ? _friendlyServerError : msg;
+        }
+        return e.message ?? 'Request failed';
       }
-      return e.message ?? e.toString();
+      final raw = e.message ?? e.toString();
+      return _isServerCrash(raw) ? _friendlyServerError : raw;
     }
-    return e.toString();
+    final raw = e.toString();
+    return _isServerCrash(raw) ? _friendlyServerError : raw;
   }
 }
