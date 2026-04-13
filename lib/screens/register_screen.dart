@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -21,6 +22,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   bool _loading = false;
   bool _agreedToTerms = false;
   String? _error;
+  int _failedAttempts = 0;
+  DateTime? _lockedUntil;
+  Timer? _countdownTimer;
+  int _remainingSeconds = 0;
 
   @override
   void dispose() {
@@ -28,7 +33,29 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     _emailCtrl.dispose();
     _passCtrl.dispose();
     _uniCtrl.dispose();
+    _countdownTimer?.cancel();
     super.dispose();
+  }
+
+  void _startLockoutTimer(int seconds) {
+    setState(() => _remainingSeconds = seconds);
+    _countdownTimer?.cancel();
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      if (_remainingSeconds > 1) {
+        setState(() => _remainingSeconds--);
+      } else {
+        setState(() {
+          _remainingSeconds = 0;
+          _lockedUntil = null;
+          _error = null;
+        });
+        timer.cancel();
+      }
+    });
   }
 
   String? _validatePassword(String pass) {
@@ -41,6 +68,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Future<void> _submit() async {
+    if (_remainingSeconds > 0) {
+      return;
+    }
+    if (_lockedUntil != null && DateTime.now().isBefore(_lockedUntil!)) {
+      final secs = _lockedUntil!.difference(DateTime.now()).inSeconds;
+      _startLockoutTimer(secs);
+      return;
+    }
+
     final name = _nameCtrl.text.trim();
     final email = _emailCtrl.text.trim();
     final pass = _passCtrl.text;
@@ -71,10 +107,21 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       if (mounted) context.go('/dashboard');
     } catch (e) {
       if (!mounted) return;
-      setState(() {
-        _error = ref.read(authServiceProvider).extractError(e);
-        _loading = false;
-      });
+      _failedAttempts++;
+      if (_failedAttempts >= 5) {
+        final delaySecs = _failedAttempts >= 10 ? 3600 : 900; // 60 mins or 15 mins
+        _lockedUntil = DateTime.now().add(Duration(seconds: delaySecs));
+        _startLockoutTimer(delaySecs);
+        setState(() {
+          _error = 'Too many failed attempts. Please wait.';
+          _loading = false;
+        });
+      } else {
+        setState(() {
+          _error = ref.read(authServiceProvider).extractError(e);
+          _loading = false;
+        });
+      }
     }
   }
 
@@ -245,14 +292,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ),
                     const SizedBox(height: 24),
                     ElevatedButton(
-                      onPressed: _loading ? null : _submit,
+                      onPressed: (_loading || _remainingSeconds > 0) ? null : _submit,
                       child: _loading
                           ? const SizedBox(
                               height: 18,
                               width: 18,
                               child: CircularProgressIndicator(
                                   strokeWidth: 2, color: Colors.white))
-                          : const Text('Create account'),
+                          : Text(_remainingSeconds > 0
+                              ? 'Try again in ${_remainingSeconds >= 60 ? '${_remainingSeconds ~/ 60}m ${_remainingSeconds % 60}s' : '${_remainingSeconds}s'}'
+                              : 'Create account'),
                     ),
                   ],
                 ),

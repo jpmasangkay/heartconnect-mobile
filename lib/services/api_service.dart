@@ -32,10 +32,17 @@ class ApiService {
   static final FlutterSecureStorage _sharedStorage = const FlutterSecureStorage();
   static String? _cachedToken;
   
+  /// Paths that should never carry an Authorization header.
+  static const _unauthPaths = {'/auth/login', '/auth/register', '/auth/forgot-password', '/auth/reset-password'};
+
+  static bool _isUnauthPath(String path) =>
+      _unauthPaths.any((p) => path.endsWith(p));
+
   static final Dio _sharedDio = Dio(BaseOptions(
     baseUrl: baseUrl,
-    connectTimeout: const Duration(seconds: 15),
-    receiveTimeout: const Duration(seconds: 30),
+    // Render free-tier cold-starts can take 50+ seconds; 60 s gives headroom.
+    connectTimeout: const Duration(seconds: 60),
+    receiveTimeout: const Duration(seconds: 60),
     sendTimeout: const Duration(seconds: 60),
     headers: {
       'Content-Type': 'application/json',
@@ -43,16 +50,25 @@ class ApiService {
     },
   ))..interceptors.add(InterceptorsWrapper(
     onRequest: (options, handler) async {
-      _cachedToken ??= await _sharedStorage.read(key: 'jwt_token');
-      options.headers['Authorization'] =
-          'Bearer ${_cachedToken ?? platform}';
+      // Don't attach a Bearer token to public auth endpoints.
+      if (!_isUnauthPath(options.path)) {
+        _cachedToken ??= await _sharedStorage.read(key: 'jwt_token');
+        if (_cachedToken != null) {
+          options.headers['Authorization'] = 'Bearer $_cachedToken';
+        }
+      }
       return handler.next(options);
     },
     onError: (DioException e, handler) {
       if (e.response?.statusCode == 401) {
-        assert(() { debugPrint('API 401: token expired or invalidated'); return true; }());
-        clearToken();
-        onAuthExpired?.call();
+        final path = e.requestOptions.path;
+        // Only trigger session-expiry for authenticated endpoints;
+        // skip login/register (wrong creds) and /auth/me (init probe).
+        if (!_isUnauthPath(path) && !path.endsWith('/me')) {
+          assert(() { debugPrint('API 401: token expired or invalidated'); return true; }());
+          clearToken();
+          onAuthExpired?.call();
+        }
       }
       return handler.next(e);
     },
@@ -110,6 +126,14 @@ class ApiService {
         return 'Cannot reach the server. Check your connection and try again.';
       }
       if (e.response?.statusCode == 401) {
+        final path = e.requestOptions.path;
+        if (path.endsWith('/login') || path.endsWith('/register')) {
+          final data = e.response?.data;
+          if (data is Map && data['message'] != null) {
+            return data['message'].toString();
+          }
+          return 'Invalid credentials.';
+        }
         return 'Session expired. Please log in again.';
       }
       if (e.response?.statusCode == 429) {
