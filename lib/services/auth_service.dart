@@ -45,6 +45,7 @@ class AuthService extends ApiService {
     required String password,
     required String role,
     String? university,
+    bool agreedToTerms = true,
   }) async {
     final res = await dio.post('/auth/register', data: {
       'name': name,
@@ -52,6 +53,7 @@ class AuthService extends ApiService {
       'password': password,
       'role': role,
       'platform': ApiService.platform,
+      'agreedToTerms': agreedToTerms,
       if (university != null && university.isNotEmpty) 'university': university,
     });
     final data = res.data as Map<String, dynamic>;

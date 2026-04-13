@@ -144,6 +144,7 @@ class AuthNotifier extends Notifier<AuthState> {
         password: password,
         role: role,
         university: university,
+        agreedToTerms: agreedToTerms,
       );
       state = AuthState(user: result.user, token: result.token);
     } catch (e) {
