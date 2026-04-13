@@ -261,31 +261,33 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(
-                          width: 24, height: 24,
-                          child: Checkbox(
-                            value: _agreedToTerms,
-                            onChanged: (v) => setState(() => _agreedToTerms = v ?? false),
-                            activeColor: AppColors.navy,
-                          ),
+                        Checkbox(
+                          value: _agreedToTerms,
+                          onChanged: (v) => setState(() => _agreedToTerms = v ?? false),
+                          activeColor: AppColors.navy,
+                          materialTapTargetSize: MaterialTapTargetSize.padded,
                         ),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: Wrap(
-                            children: [
-                              const Text('I agree to the ', style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
-                              GestureDetector(
-                                onTap: () => context.push('/terms'),
-                                child: const Text('Terms of Service',
-                                    style: TextStyle(fontSize: 12, color: AppColors.accent, fontWeight: FontWeight.w600)),
-                              ),
-                              const Text(' and ', style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
-                              GestureDetector(
-                                onTap: () => context.push('/privacy'),
-                                child: const Text('Privacy Policy',
-                                    style: TextStyle(fontSize: 12, color: AppColors.accent, fontWeight: FontWeight.w600)),
-                              ),
-                            ],
+                          child: GestureDetector(
+                            onTap: () => setState(() => _agreedToTerms = !_agreedToTerms),
+                            behavior: HitTestBehavior.opaque,
+                            child: Wrap(
+                              children: [
+                                const Text('I agree to the ', style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
+                                GestureDetector(
+                                  onTap: () => context.push('/terms'),
+                                  child: const Text('Terms of Service',
+                                      style: TextStyle(fontSize: 12, color: AppColors.accent, fontWeight: FontWeight.w600)),
+                                ),
+                                const Text(' and ', style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
+                                GestureDetector(
+                                  onTap: () => context.push('/privacy'),
+                                  child: const Text('Privacy Policy',
+                                      style: TextStyle(fontSize: 12, color: AppColors.accent, fontWeight: FontWeight.w600)),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],

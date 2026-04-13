@@ -8,13 +8,30 @@ class AuthService extends ApiService {
   static final AuthService instance = AuthService._();
 
   /// Returns either a normal login result OR a 2FA challenge.
+  /// Automatically retries once on timeout (Render free-tier cold-start).
   Future<({String? token, User? user, bool requires2FA, String? tempToken, String? twoFactorMethod})> login(
       String email, String password) async {
-    final res = await dio.post('/auth/login', data: {
+    final body = {
       'email': email,
       'password': password,
       'platform': ApiService.platform,
-    });
+    };
+
+    Response res;
+    try {
+      res = await dio.post('/auth/login', data: body);
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.sendTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.connectionError) {
+        // Server was likely cold-starting; retry once.
+        res = await dio.post('/auth/login', data: body);
+      } else {
+        rethrow;
+      }
+    }
+
     final data = res.data as Map<String, dynamic>;
 
     // 2FA required
@@ -38,7 +55,7 @@ class AuthService extends ApiService {
       twoFactorMethod: null,
     );
   }
-
+  /// Automatically retries once on timeout (Render free-tier cold-start).
   Future<({String token, User user})> register({
     required String name,
     required String email,
@@ -47,7 +64,7 @@ class AuthService extends ApiService {
     String? university,
     bool agreedToTerms = true,
   }) async {
-    final res = await dio.post('/auth/register', data: {
+    final body = {
       'name': name,
       'email': email,
       'password': password,
@@ -55,7 +72,23 @@ class AuthService extends ApiService {
       'platform': ApiService.platform,
       'agreedToTerms': agreedToTerms,
       if (university != null && university.isNotEmpty) 'university': university,
-    });
+    };
+
+    Response res;
+    try {
+      res = await dio.post('/auth/register', data: body);
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.sendTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.connectionError) {
+        // Server was likely cold-starting; retry once.
+        res = await dio.post('/auth/register', data: body);
+      } else {
+        rethrow;
+      }
+    }
+
     final data = res.data as Map<String, dynamic>;
     final token = data['token'] as String;
     await ApiService.setToken(token);

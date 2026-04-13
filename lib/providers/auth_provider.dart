@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user.dart';
 import '../services/auth_service.dart';
@@ -65,18 +66,38 @@ class AuthNotifier extends Notifier<AuthState> {
 
   Future<void> _init() async {
     ApiService.onAuthExpired = _handleAuthExpired;
+
+    // Check for a stored token first before hitting the network.
+    final token = await ApiService.getToken();
+
+    // No token at all → go to login, nothing to clear.
+    if (token == null) {
+      state = const AuthState();
+      return;
+    }
+
     try {
       final user = await _service.getCurrentUser();
-      final token = await ApiService.getToken();
-      if (user != null && token != null) {
+      if (user != null) {
         state = AuthState(user: user, token: token);
       } else {
+        // /auth/me returned 401 → token is genuinely invalid, clear it.
         await ApiService.clearToken();
         state = const AuthState();
       }
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        // Token rejected by server → clear it.
+        await ApiService.clearToken();
+        state = const AuthState();
+      } else {
+        // Network error / Render cold-start timeout → keep the token,
+        // let the user stay logged in and retry rather than wiping their session.
+        state = AuthState(token: token, user: null);
+      }
     } catch (_) {
-      await ApiService.clearToken();
-      state = const AuthState();
+      // Unknown error → preserve token, don't wipe session.
+      state = AuthState(token: token, user: null);
     }
   }
 

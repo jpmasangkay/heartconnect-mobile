@@ -117,13 +117,13 @@ class ApiService {
         if (kDebugMode) {
           return 'Server did not respond in time. Check VITE_API_URL / API_BASE_URL / API_HOST ($baseUrl) and that the backend is running.';
         }
-        return 'Server did not respond in time. Check your connection and try again.';
+        return 'Server is waking up. Please wait a moment and try again.';
       }
       if (e.type == DioExceptionType.connectionError) {
         if (kDebugMode) {
           return 'Cannot reach server at $baseUrl. Set --dart-define=VITE_API_URL=... (or API_BASE_URL, or API_HOST for LAN dev).';
         }
-        return 'Cannot reach the server. Check your connection and try again.';
+        return 'Cannot reach the server. Check your internet connection and try again.';
       }
       if (e.response?.statusCode == 401) {
         final path = e.requestOptions.path;
@@ -135,6 +135,14 @@ class ApiService {
           return 'Invalid credentials.';
         }
         return 'Session expired. Please log in again.';
+      }
+      if (e.response?.statusCode == 403) {
+        final data = e.response?.data;
+        if (data is Map && data['message'] != null) {
+          final msg = data['message'].toString();
+          return _isServerCrash(msg) ? _friendlyServerError : msg;
+        }
+        return 'Access denied. Please try again or contact support.';
       }
       if (e.response?.statusCode == 429) {
         final data = e.response?.data;
