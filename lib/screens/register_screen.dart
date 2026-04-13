@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -261,32 +262,44 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Checkbox(
-                          value: _agreedToTerms,
-                          onChanged: (v) => setState(() => _agreedToTerms = v ?? false),
-                          activeColor: AppColors.navy,
-                          materialTapTargetSize: MaterialTapTargetSize.padded,
+                        SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: Checkbox(
+                            value: _agreedToTerms,
+                            onChanged: (v) => setState(() => _agreedToTerms = v ?? false),
+                            activeColor: AppColors.navy,
+                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 10),
                         Expanded(
-                          child: GestureDetector(
-                            onTap: () => setState(() => _agreedToTerms = !_agreedToTerms),
-                            behavior: HitTestBehavior.opaque,
-                            child: Wrap(
-                              children: [
-                                const Text('I agree to the ', style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
-                                GestureDetector(
-                                  onTap: () => context.push('/terms'),
-                                  child: const Text('Terms of Service',
-                                      style: TextStyle(fontSize: 12, color: AppColors.accent, fontWeight: FontWeight.w600)),
-                                ),
-                                const Text(' and ', style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
-                                GestureDetector(
-                                  onTap: () => context.push('/privacy'),
-                                  child: const Text('Privacy Policy',
-                                      style: TextStyle(fontSize: 12, color: AppColors.accent, fontWeight: FontWeight.w600)),
-                                ),
-                              ],
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 3),
+                            child: RichText(
+                              text: TextSpan(
+                                style: const TextStyle(fontSize: 12, color: AppColors.textMuted, height: 1.4),
+                                children: [
+                                  TextSpan(
+                                    text: 'I agree to the ',
+                                    recognizer: TapGestureRecognizer()..onTap = () => setState(() => _agreedToTerms = !_agreedToTerms),
+                                  ),
+                                  TextSpan(
+                                    text: 'Terms of Service',
+                                    style: const TextStyle(fontSize: 12, color: AppColors.accent, fontWeight: FontWeight.w600),
+                                    recognizer: TapGestureRecognizer()..onTap = () => context.push('/terms'),
+                                  ),
+                                  TextSpan(
+                                    text: ' and ',
+                                    recognizer: TapGestureRecognizer()..onTap = () => setState(() => _agreedToTerms = !_agreedToTerms),
+                                  ),
+                                  TextSpan(
+                                    text: 'Privacy Policy',
+                                    style: const TextStyle(fontSize: 12, color: AppColors.accent, fontWeight: FontWeight.w600),
+                                    recognizer: TapGestureRecognizer()..onTap = () => context.push('/privacy'),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
