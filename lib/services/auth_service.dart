@@ -62,7 +62,7 @@ class AuthService extends ApiService {
     required String password,
     required String role,
     String? university,
-    bool agreedToTerms = true,
+    required bool agreedToTerms,
   }) async {
     final body = {
       'name': name,

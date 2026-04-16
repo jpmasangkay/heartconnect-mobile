@@ -71,14 +71,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   void _setAgreedToTerms(bool value) {
     setState(() {
       _agreedToTerms = value;
-      if (_agreedToTerms) {
-        final err = _error?.toLowerCase();
-        final looksLikeTermsError =
-            err != null && err.contains('agree') && err.contains('term');
-        if (looksLikeTermsError) {
-        _error = null;
-        }
-      }
+      if (value) _error = null;
     });
   }
 

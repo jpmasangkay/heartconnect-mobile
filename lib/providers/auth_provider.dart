@@ -155,7 +155,7 @@ class AuthNotifier extends Notifier<AuthState> {
     required String password,
     required String role,
     String? university,
-    bool agreedToTerms = true,
+    required bool agreedToTerms,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
