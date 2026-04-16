@@ -15,6 +15,30 @@
 /// builds `http://$API_HOST/api` and a matching socket origin. Defaults to
 /// `heartconnect.onrender.com` (production backend).
 abstract final class AppConfig {
+  /// Optional browser-origin used by some backends for CORS / origin allowlists.
+  ///
+  /// Mobile clients don't naturally send an `Origin` header, but some server
+  /// deployments enforce an allowlist at the application layer and expect a
+  /// known origin string anyway. If your backend returns 403 like
+  /// "Forbidden origin not allowed", set this via:
+  /// `--dart-define=CLIENT_URL=https://your-frontend.example.com`
+  static String get clientOrigin {
+    const client = String.fromEnvironment('CLIENT_URL');
+    if (client.isNotEmpty) return _trimTrailingSlashes(client);
+    const viteClient = String.fromEnvironment('VITE_CLIENT_URL');
+    if (viteClient.isNotEmpty) return _trimTrailingSlashes(viteClient);
+    // Production default: backend is Render, allowlisted web origin is Vercel.
+    // If your backend is configured differently, override via CLIENT_URL.
+    const host = String.fromEnvironment('API_HOST', defaultValue: 'heartconnect.onrender.com');
+    if (host == 'heartconnect.onrender.com') {
+      return 'https://heartconnect-nine.vercel.app';
+    }
+
+    // Dev fallback: use API origin (some backends accept their own origin).
+    final origin = socketUrl;
+    return origin.isEmpty ? '' : _trimTrailingSlashes(origin);
+  }
+
   static String get apiBaseUrl {
     const vite = String.fromEnvironment('VITE_API_URL');
     if (vite.isNotEmpty) return _trimTrailingSlashes(vite);

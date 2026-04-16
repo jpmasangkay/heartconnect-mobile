@@ -68,6 +68,20 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     return null;
   }
 
+  void _setAgreedToTerms(bool value) {
+    setState(() {
+      _agreedToTerms = value;
+      if (_agreedToTerms) {
+        final err = _error?.toLowerCase();
+        final looksLikeTermsError =
+            err != null && err.contains('agree') && err.contains('term');
+        if (looksLikeTermsError) {
+        _error = null;
+        }
+      }
+    });
+  }
+
   Future<void> _submit() async {
     if (_remainingSeconds > 0) {
       return;
@@ -104,6 +118,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             password: pass,
             role: _role,
             university: _role == 'student' ? _uniCtrl.text.trim() : null,
+            agreedToTerms: _agreedToTerms,
           );
       if (mounted) context.go('/dashboard');
     } catch (e) {
@@ -267,7 +282,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           height: 24,
                           child: Checkbox(
                             value: _agreedToTerms,
-                            onChanged: (v) => setState(() => _agreedToTerms = v ?? false),
+                            onChanged: (v) => _setAgreedToTerms(v ?? false),
                             activeColor: AppColors.navy,
                             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
@@ -282,7 +297,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                 children: [
                                   TextSpan(
                                     text: 'I agree to the ',
-                                    recognizer: TapGestureRecognizer()..onTap = () => setState(() => _agreedToTerms = !_agreedToTerms),
                                   ),
                                   TextSpan(
                                     text: 'Terms of Service',
@@ -291,7 +305,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   ),
                                   TextSpan(
                                     text: ' and ',
-                                    recognizer: TapGestureRecognizer()..onTap = () => setState(() => _agreedToTerms = !_agreedToTerms),
                                   ),
                                   TextSpan(
                                     text: 'Privacy Policy',

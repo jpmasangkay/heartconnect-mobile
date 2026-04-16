@@ -50,6 +50,22 @@ class ApiService {
     },
   ))..interceptors.add(InterceptorsWrapper(
     onRequest: (options, handler) async {
+      // Some deployments apply origin allowlists at the app layer (not only via
+      // browser CORS). Mobile HTTP clients don't send an Origin header by
+      // default, so optionally provide a configured client origin.
+      final origin = AppConfig.clientOrigin;
+      if (origin.isNotEmpty && options.headers['Origin'] == null) {
+        options.headers['Origin'] = origin;
+        options.headers['Referer'] = '$origin/';
+      }
+
+      // Use print (not debugPrint) so it always shows in logs.
+      if (kDebugMode) {
+        print(
+          'API REQ ${options.method} ${options.uri} | Origin=${options.headers['Origin']}',
+        );
+      }
+
       // Don't attach a Bearer token to public auth endpoints.
       if (!_isUnauthPath(options.path)) {
         _cachedToken ??= await _sharedStorage.read(key: 'jwt_token');
@@ -60,6 +76,14 @@ class ApiService {
       return handler.next(options);
     },
     onError: (DioException e, handler) {
+      if (kDebugMode) {
+        final req = e.requestOptions;
+        print(
+          'API ERR ${e.response?.statusCode ?? '-'} ${req.method} ${req.uri} '
+          '| Origin=${req.headers['Origin']} '
+          '| Data=${e.response?.data}',
+        );
+      }
       if (e.response?.statusCode == 401) {
         final path = e.requestOptions.path;
         // Only trigger session-expiry for authenticated endpoints;
