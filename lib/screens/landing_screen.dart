@@ -60,13 +60,10 @@ class LandingScreen extends StatelessWidget {
                                         MainAxisAlignment.spaceBetween,
                                     children: [
                                       Row(children: [
-                                        Container(
-                                          width: 8,
-                                          height: 8,
-                                          decoration: const BoxDecoration(
-                                            color: AppColors.accent,
-                                            shape: BoxShape.circle,
-                                          ),
+                                        Image.asset(
+                                          'assets/logo.png',
+                                          height: 24,
+                                          fit: BoxFit.contain,
                                         ),
                                         const SizedBox(width: 8),
                                         const Text(
