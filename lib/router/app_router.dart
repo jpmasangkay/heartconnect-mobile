@@ -58,15 +58,36 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (auth.isLoading) return null;
 
       if (!isAuth && !publicPaths.contains(path)) return '/login';
+
+      final role = auth.user?.role;
+
       if (isAuth && (path == '/' || path == '/login' || path == '/register')) {
         // Redirect to onboarding if not completed
         if (auth.needsOnboarding) return '/onboarding';
+        // Admin goes straight to admin dashboard
+        if (role == 'admin') return '/admin';
         return '/dashboard';
       }
+
       // Role-based guardrails
-      final role = auth.user?.role;
       if (role == 'client' && path == '/saved-jobs') return '/profile';
       if (role != 'admin' && path == '/admin') return '/dashboard';
+
+      // Block admins from student/client routes
+      if (role == 'admin') {
+        const adminBlockedPaths = [
+          '/dashboard', '/jobs', '/chat', '/profile',
+          '/post-job', '/saved-jobs', '/reviews',
+          '/verification', '/blocked-users',
+        ];
+        if (adminBlockedPaths.contains(path) ||
+            path.startsWith('/jobs/') ||
+            path.startsWith('/chat/') ||
+            path.startsWith('/users/')) {
+          return '/admin';
+        }
+      }
+
       return null;
     },
     routes: [

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
+import '../providers/auth_provider.dart';
 import '../services/admin_service.dart';
 import '../theme/app_theme.dart';
 
@@ -28,40 +30,53 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
     super.dispose();
   }
 
+  Future<void> _logout() async {
+    await ref.read(authProvider.notifier).logout();
+    if (mounted) context.go('/');
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Admin Dashboard'),
-        backgroundColor: Colors.white,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, size: 16),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/profile');
-            }
-          },
+    final user = ref.watch(authProvider).user;
+    final firstName = user?.name.split(' ').first ?? 'Admin';
+
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) SystemNavigator.pop();
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          title: Text('Hi, $firstName'),
+          automaticallyImplyLeading: false,
+          backgroundColor: Colors.white,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.logout, size: 20),
+              tooltip: 'Sign out',
+              onPressed: _logout,
+            ),
+            const SizedBox(width: 8),
+          ],
+          bottom: TabBar(
+            controller: _tabCtrl,
+            labelColor: AppColors.navy,
+            unselectedLabelColor: AppColors.textMuted,
+            indicatorColor: AppColors.navy,
+            tabs: const [
+              Tab(text: 'Users'),
+              Tab(text: 'Verifications'),
+            ],
+          ),
         ),
-        bottom: TabBar(
+        body: TabBarView(
           controller: _tabCtrl,
-          labelColor: AppColors.navy,
-          unselectedLabelColor: AppColors.textMuted,
-          indicatorColor: AppColors.navy,
-          tabs: const [
-            Tab(text: 'Users'),
-            Tab(text: 'Verifications'),
+          children: const [
+            _UsersTab(),
+            _VerificationsTab(),
           ],
         ),
-      ),
-      body: TabBarView(
-        controller: _tabCtrl,
-        children: const [
-          _UsersTab(),
-          _VerificationsTab(),
-        ],
       ),
     );
   }

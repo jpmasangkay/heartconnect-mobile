@@ -99,12 +99,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
         );
         if (result == true && mounted) {
-          context.go('/dashboard');
+          final authAfter2FA = ref.read(authProvider);
+          context.go(authAfter2FA.user?.role == 'admin' ? '/admin' : '/dashboard');
         }
         return;
       }
 
-      context.go('/dashboard');
+      final authAfterLogin = ref.read(authProvider);
+      context.go(authAfterLogin.user?.role == 'admin' ? '/admin' : '/dashboard');
     } catch (e) {
       if (!mounted) return;
       _failedAttempts++;
