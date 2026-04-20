@@ -21,7 +21,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
   @override
   void initState() {
     super.initState();
-    _tabCtrl = TabController(length: 2, vsync: this);
+    _tabCtrl = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -67,6 +67,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
             tabs: const [
               Tab(text: 'Users'),
               Tab(text: 'Verifications'),
+              Tab(text: 'Reports'),
             ],
           ),
         ),
@@ -75,6 +76,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
           children: const [
             _UsersTab(),
             _VerificationsTab(),
+            _ReportsTab(),
           ],
         ),
       ),
@@ -309,13 +311,20 @@ class _VerificationsTabState extends State<_VerificationsTab> {
                                   children: [
                                     OutlinedButton(
                                       onPressed: () => _handleVerification(u['_id'], false),
-                                      style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: Colors.red,
+                                        minimumSize: const Size(0, 40),
+                                      ),
                                       child: const Text('Reject'),
                                     ),
                                     const SizedBox(width: 8),
                                     ElevatedButton(
                                       onPressed: () => _handleVerification(u['_id'], true),
-                                      style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.green,
+                                        foregroundColor: Colors.white,
+                                        minimumSize: const Size(0, 40),
+                                      ),
                                       child: const Text('Approve'),
                                     ),
                                   ],
@@ -326,6 +335,259 @@ class _VerificationsTabState extends State<_VerificationsTab> {
                         );
                       },
                     ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Reports Tab ───────────────────────────────────────────────────────────────
+
+class _ReportsTab extends StatefulWidget {
+  const _ReportsTab();
+
+  @override
+  State<_ReportsTab> createState() => _ReportsTabState();
+}
+
+class _ReportsTabState extends State<_ReportsTab> {
+  final _adminService = AdminService.instance;
+  List<Map<String, dynamic>> _reports = [];
+  bool _loading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetch();
+  }
+
+  Future<void> _fetch() async {
+    setState(() { _loading = true; _error = null; });
+    try {
+      final list = await _adminService.getPendingReports();
+      if (mounted) {
+        setState(() {
+          _reports = list;
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _error = _adminService.extractError(e);
+        });
+      }
+    }
+  }
+
+  Future<void> _resolve(String reportId, String action) async {
+    try {
+      await _adminService.resolveReport(reportId, action);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(action == 'dismissed' ? 'Report dismissed' : 'Report reviewed — action taken')),
+      );
+      _fetch();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_adminService.extractError(e))));
+    }
+  }
+
+  String _formatDate(dynamic raw) {
+    if (raw == null) return '';
+    try {
+      final dt = DateTime.parse(raw.toString()).toLocal();
+      return '${dt.month}/${dt.day}/${dt.year} ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
+    } catch (_) {
+      return raw.toString();
+    }
+  }
+
+  Color _reasonColor(String reason) {
+    switch (reason.toLowerCase()) {
+      case 'harassment': return Colors.red;
+      case 'spam': return Colors.orange;
+      case 'inappropriate': return Colors.deepOrange;
+      case 'fraud': return Colors.red.shade800;
+      case 'other': return Colors.blueGrey;
+      default: return AppColors.navy;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            IconButton(icon: const Icon(Icons.refresh), onPressed: _fetch),
+          ],
+        ),
+        Expanded(
+          child: _loading
+              ? const Center(child: CircularProgressIndicator())
+              : _error != null
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.warning_amber_rounded, size: 48, color: Colors.orange),
+                            const SizedBox(height: 12),
+                            Text(_error!, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.textMuted)),
+                            const SizedBox(height: 16),
+                            OutlinedButton.icon(
+                              onPressed: _fetch,
+                              icon: const Icon(Icons.refresh, size: 18),
+                              label: const Text('Retry'),
+                              style: OutlinedButton.styleFrom(minimumSize: const Size(0, 40)),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : _reports.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.check_circle_outline, size: 56, color: Colors.green.shade300),
+                              const SizedBox(height: 12),
+                              const Text('No pending reports', style: TextStyle(fontSize: 16, color: AppColors.textMuted)),
+                            ],
+                          ),
+                        )
+                      : ListView.separated(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          itemCount: _reports.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 12),
+                          itemBuilder: (context, i) {
+                            final r = _reports[i];
+                            final reason = (r['reason'] ?? 'Unknown').toString();
+                            final description = r['description']?.toString();
+                            final targetType = (r['targetType'] ?? 'user').toString();
+                            final reporter = r['reporter'];
+                            final reporterName = reporter is Map ? (reporter['name'] ?? 'Unknown') : 'Unknown';
+                            final reporterEmail = reporter is Map ? (reporter['email'] ?? '') : '';
+                            final targetId = r['targetId']?.toString() ?? '';
+                            final createdAt = _formatDate(r['createdAt']);
+
+                            return Card(
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              child: Padding(
+                                padding: const EdgeInsets.all(14),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Header row: reason chip + type badge + date
+                                    Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: _reasonColor(reason).withValues(alpha: 0.12),
+                                            borderRadius: BorderRadius.circular(20),
+                                          ),
+                                          child: Text(
+                                            reason,
+                                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _reasonColor(reason)),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                          decoration: BoxDecoration(
+                                            color: targetType == 'job' ? Colors.blue.shade50 : Colors.purple.shade50,
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: Text(
+                                            targetType.toUpperCase(),
+                                            style: TextStyle(
+                                              fontSize: 10, fontWeight: FontWeight.w700,
+                                              color: targetType == 'job' ? Colors.blue.shade700 : Colors.purple.shade700,
+                                            ),
+                                          ),
+                                        ),
+                                        const Spacer(),
+                                        Text(createdAt, style: const TextStyle(fontSize: 11, color: AppColors.textMuted)),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 10),
+
+                                    // Reporter → Target
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.person_outline, size: 16, color: AppColors.textMuted),
+                                        const SizedBox(width: 4),
+                                        Flexible(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(reporterName.toString(), style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                                              if (reporterEmail.isNotEmpty)
+                                                Text(reporterEmail.toString(), style: const TextStyle(fontSize: 11, color: AppColors.textMuted)),
+                                              Text('Target: ${targetType.toUpperCase()} · ${targetId.length > 8 ? '${targetId.substring(0, 8)}…' : targetId}',
+                                                style: const TextStyle(fontSize: 11, color: AppColors.textMuted)),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+
+                                    // Description
+                                    if (description != null && description.isNotEmpty) ...[
+                                      const SizedBox(height: 8),
+                                      Container(
+                                        width: double.infinity,
+                                        padding: const EdgeInsets.all(10),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.background,
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Text(description, style: const TextStyle(fontSize: 13, color: AppColors.textBody)),
+                                      ),
+                                    ],
+                                    const SizedBox(height: 12),
+
+                                    // Action buttons
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        OutlinedButton.icon(
+                                          onPressed: () => _resolve(r['_id'], 'dismissed'),
+                                          icon: const Icon(Icons.close, size: 16),
+                                          label: const Text('Dismiss'),
+                                          style: OutlinedButton.styleFrom(
+                                            foregroundColor: AppColors.textMuted,
+                                            minimumSize: const Size(0, 38),
+                                            padding: const EdgeInsets.symmetric(horizontal: 14),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        ElevatedButton.icon(
+                                          onPressed: () => _resolve(r['_id'], 'reviewed'),
+                                          icon: const Icon(Icons.gavel, size: 16),
+                                          label: const Text('Take Action'),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.red.shade600,
+                                            foregroundColor: Colors.white,
+                                            minimumSize: const Size(0, 38),
+                                            padding: const EdgeInsets.symmetric(horizontal: 14),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
         ),
       ],
     );
