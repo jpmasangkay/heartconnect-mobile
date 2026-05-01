@@ -512,7 +512,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: const Text('Delete conversation?'),
         content: const Text('This action cannot be undone.'),
         actions: [

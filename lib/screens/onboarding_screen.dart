@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../providers/auth_provider.dart';
 import '../theme/app_theme.dart';
 
@@ -75,16 +73,32 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Skip button
-            Align(
-              alignment: Alignment.topRight,
-              child: TextButton(
-                onPressed: _finish,
-                child: Text('Skip',
-                    style: GoogleFonts.inter(
-                        color: AppColors.textMuted,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15)),
+            // Top bar: back arrow + Skip
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back, color: AppColors.navy),
+                    onPressed: () {
+                      if (_currentPage > 0) {
+                        _pageController.previousPage(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeOutCubic,
+                        );
+                      }
+                    },
+                  ),
+                  TextButton(
+                    onPressed: _finish,
+                    child: const Text('Skip',
+                        style: TextStyle(
+                            color: AppColors.textMuted,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 15)),
+                  ),
+                ],
               ),
             ),
             // Pages
@@ -96,19 +110,24 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 itemBuilder: (_, i) => _pages[i],
               ),
             ),
-            // Indicator
+            // Red dot indicator
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 24),
-              child: SmoothPageIndicator(
-                controller: _pageController,
-                count: _pages.length,
-                effect: ExpandingDotsEffect(
-                  activeDotColor: AppColors.navy,
-                  dotColor: AppColors.border,
-                  dotHeight: 8,
-                  dotWidth: 8,
-                  expansionFactor: 3,
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(_pages.length, (i) {
+                  return Container(
+                    width: 8,
+                    height: 8,
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: i == _currentPage
+                          ? AppColors.accent
+                          : AppColors.border,
+                    ),
+                  );
+                }),
               ),
             ),
             // Button
@@ -150,20 +169,19 @@ class _OnboardingPage extends StatelessWidget {
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-              boxShadow: [BoxShadow(color: color.withValues(alpha: 0.1), blurRadius: 24, offset: const Offset(0, 8))],
+              color: AppColors.cream,
+              borderRadius: BorderRadius.circular(24),
             ),
-            child: Icon(icon, size: 56, color: color),
+            child: Icon(icon, size: 56, color: AppColors.navy),
           ),
           const SizedBox(height: 40),
           Text(title,
-              style: GoogleFonts.dmSans(
-                  fontWeight: FontWeight.w800, fontSize: 28, color: AppColors.navy),
+              style: const TextStyle(
+                  fontWeight: FontWeight.w700, fontSize: 24, color: AppColors.navy),
               textAlign: TextAlign.center),
           const SizedBox(height: 16),
           Text(subtitle,
-              style: GoogleFonts.inter(
+              style: const TextStyle(
                   color: AppColors.textMuted, fontSize: 15, height: 1.5),
               textAlign: TextAlign.center),
         ],

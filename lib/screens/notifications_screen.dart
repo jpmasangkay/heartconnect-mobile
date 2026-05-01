@@ -3,7 +3,7 @@ import '../models/notification.dart' as app;
 import '../services/notification_service.dart';
 import '../theme/app_theme.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -287,8 +287,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           if (hasUnread)
             TextButton(
               onPressed: _markAllRead,
-              child: Text('Mark all read',
-                  style: GoogleFonts.inter(
+                  child: const Text('Mark all read',
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: AppColors.accent,
@@ -311,7 +311,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           color: hasRead ? Colors.red : AppColors.textMuted),
                       const SizedBox(width: 10),
                       Text('Delete all read',
-                          style: GoogleFonts.inter(
+                          style: TextStyle(
                             fontSize: 14,
                             color: hasRead ? Colors.red : AppColors.textMuted,
                           )),
@@ -332,8 +332,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       Icon(Icons.notifications_off_outlined,
                           size: 64, color: AppColors.textMuted.withValues(alpha: 0.1)),
                       const SizedBox(height: 16),
-                      Text('No notifications yet',
-                          style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 16)),
+                      const Text('No notifications yet',
+                          style: TextStyle(color: AppColors.textMuted, fontSize: 16)),
                     ],
                   ),
                 )
@@ -366,7 +366,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                 height: 40,
                                 decoration: BoxDecoration(
                                   color: color.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(14),
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Icon(_typeIcon(n.type), size: 20, color: color),
                               ),
@@ -376,14 +376,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(n.title,
-                                        style: GoogleFonts.inter(
+                                        style: TextStyle(
                                           fontWeight: n.read ? FontWeight.w500 : FontWeight.w700,
                                           fontSize: 14,
                                           color: AppColors.textBody,
                                         )),
                                     const SizedBox(height: 2),
                                     Text(n.message,
-                                        style: GoogleFonts.inter(
+                                        style: const TextStyle(
                                           fontSize: 13,
                                           color: AppColors.textMuted,
                                         ),
@@ -391,7 +391,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                         overflow: TextOverflow.ellipsis),
                                     const SizedBox(height: 4),
                                     Text(_timeAgo(n.createdAt),
-                                        style: GoogleFonts.inter(
+                                        style: TextStyle(
                                           fontSize: 11,
                                           color: AppColors.textMuted.withValues(alpha: 0.6),
                                         )),

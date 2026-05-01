@@ -55,4 +55,31 @@ class AdminService extends ApiService {
     });
     return Map<String, dynamic>.from(res.data ?? {});
   }
+
+  // ── Analytics ─────────────────────────────────────────────────────────────
+
+  Future<Map<String, dynamic>> getAnalyticsOverview() async {
+    final res = await dio.get('/admin/analytics/overview');
+    return Map<String, dynamic>.from(res.data);
+  }
+
+  Future<Map<String, dynamic>> getAnalyticsUsers({String period = '30d'}) async {
+    final res = await dio.get('/admin/analytics/users', queryParameters: {'period': period});
+    return Map<String, dynamic>.from(res.data);
+  }
+
+  Future<Map<String, dynamic>> getAnalyticsJobs({String period = '30d'}) async {
+    final res = await dio.get('/admin/analytics/jobs', queryParameters: {'period': period});
+    return Map<String, dynamic>.from(res.data);
+  }
+
+  Future<Map<String, dynamic>> getAnalyticsApplications({String period = '30d'}) async {
+    final res = await dio.get('/admin/analytics/applications', queryParameters: {'period': period});
+    return Map<String, dynamic>.from(res.data);
+  }
+
+  Future<Map<String, dynamic>> getAnalyticsEngagement({String period = '30d'}) async {
+    final res = await dio.get('/admin/analytics/engagement', queryParameters: {'period': period});
+    return Map<String, dynamic>.from(res.data);
+  }
 }

@@ -120,6 +120,21 @@ class JobService extends ApiService {
     }
   }
 
+  /// AI-powered job recommendations for students.
+  Future<List<Job>> getRecommended({int limit = 10}) async {
+    try {
+      final res = await dio.get('/jobs/recommended', queryParameters: {'limit': limit});
+      final data = res.data as Map<String, dynamic>;
+      final list = data['data'] is List ? data['data'] as List : <dynamic>[];
+      return list
+          .whereType<Map>()
+          .map((e) => Job.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
   // ── Socket ───────────────────────────────────────────────────────────────
 
   bool _listenersRegistered = false;

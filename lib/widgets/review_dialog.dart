@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import '../models/user.dart';
 import '../models/job.dart';
 import '../services/review_service.dart';
@@ -67,21 +67,21 @@ class _ReviewDialogState extends State<ReviewDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: AppColors.surface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Leave a Review',
-                style: GoogleFonts.dmSans(
+            const Text('Leave a Review',
+                style: TextStyle(
                     fontWeight: FontWeight.w800, fontSize: 20, color: AppColors.navy)),
             const SizedBox(height: 4),
             Text('for ${widget.reviewee.name}',
-                style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 14)),
+                style: const TextStyle(color: AppColors.textMuted, fontSize: 14)),
             const SizedBox(height: 6),
             Text(widget.job.title,
-                style: GoogleFonts.inter(
+                style: const TextStyle(
                     color: AppColors.textBody, fontSize: 13, fontWeight: FontWeight.w600),
                 textAlign: TextAlign.center),
             const SizedBox(height: 20),
@@ -113,10 +113,10 @@ class _ReviewDialogState extends State<ReviewDialog> {
               const SizedBox(height: 8),
               Text(
                 ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'][_rating],
-                style: GoogleFonts.inter(
+                style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFFF59E0B),
+                  color: Color(0xFFF59E0B),
                 ),
               ),
             ],
@@ -133,7 +133,7 @@ class _ReviewDialogState extends State<ReviewDialog> {
             if (_error != null) ...[
               const SizedBox(height: 8),
               Text(_error!,
-                  style: GoogleFonts.inter(fontSize: 13, color: Colors.red)),
+                  style: const TextStyle(fontSize: 13, color: Colors.red)),
             ],
             const SizedBox(height: 20),
             Row(

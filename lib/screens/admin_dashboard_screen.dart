@@ -491,7 +491,7 @@ class _ReportsTabState extends State<_ReportsTab> {
                                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                           decoration: BoxDecoration(
                                             color: _reasonColor(reason).withValues(alpha: 0.12),
-                                            borderRadius: BorderRadius.circular(20),
+                                            borderRadius: BorderRadius.circular(12),
                                           ),
                                           child: Text(
                                             reason,

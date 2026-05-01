@@ -19,7 +19,7 @@ class LandingScreen extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color(0xFFF8F5EE), Color(0xFFEFF7EA)],
+                  colors: [Color(0xFFFFFFFF), Color(0xFFF8F9FA)],
                 ),
               ),
               child: Stack(
@@ -28,17 +28,17 @@ class LandingScreen extends StatelessWidget {
                   Positioned(
                     top: -60,
                     left: -80,
-                    child: _Orb(size: 320, color: const Color(0xFF1e4d8c).withValues(alpha: 0.1)),
+                    child: _Orb(size: 320, color: AppColors.navy.withValues(alpha: 0.05)),
                   ),
                   Positioned(
                     top: 80,
                     right: -60,
-                    child: _Orb(size: 240, color: const Color(0xFFC4622A).withValues(alpha: 0.1)),
+                    child: _Orb(size: 240, color: AppColors.accent.withValues(alpha: 0.05)),
                   ),
                   Positioned(
                     bottom: 100,
                     left: 60,
-                    child: _Orb(size: 180, color: const Color(0xFF2d6a4f).withValues(alpha: 0.1)),
+                    child: _Orb(size: 180, color: AppColors.navy.withValues(alpha: 0.03)),
                   ),
                   // Content
                   SafeArea(
@@ -120,7 +120,7 @@ class LandingScreen extends StatelessWidget {
                                     'Connecting\nSkills to\nEvery Need.',
                                     style: TextStyle(
                                       fontSize: 42,
-                                      fontWeight: FontWeight.w900,
+                                      fontWeight: FontWeight.w800,
                                       color: AppColors.navy,
                                       height: 1.1,
                                     ),
@@ -172,7 +172,7 @@ class LandingScreen extends StatelessWidget {
                                     padding: const EdgeInsets.all(18),
                                     decoration: BoxDecoration(
                                       color: Colors.white,
-                                      borderRadius: BorderRadius.circular(20),
+                                      borderRadius: BorderRadius.circular(12),
                                       boxShadow: AppColors.cardShadow,
                                     ),
                                     child: Row(
@@ -218,7 +218,7 @@ class LandingScreen extends StatelessWidget {
                   const Text('Browse by Category',
                       style: TextStyle(
                           fontSize: 22,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w800,
                           color: AppColors.navy)),
                 ],
               ),
@@ -240,7 +240,7 @@ class LandingScreen extends StatelessWidget {
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
                 color: AppColors.navy,
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
                 children: [
@@ -249,7 +249,7 @@ class LandingScreen extends StatelessWidget {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 20,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w800,
                       color: Colors.white,
                       height: 1.3,
                     ),
@@ -259,7 +259,7 @@ class LandingScreen extends StatelessWidget {
                     onPressed: () => context.go('/register'),
                     style: ButtonStyle(
                       backgroundColor: const WidgetStatePropertyAll(Color(0xFFFFFFFF)),
-                      foregroundColor: const WidgetStatePropertyAll(Color(0xFF1C3A28)),
+                      foregroundColor: const WidgetStatePropertyAll(AppColors.navy),
                       side: const WidgetStatePropertyAll(BorderSide.none),
                       overlayColor: WidgetStatePropertyAll(AppColors.navy.withValues(alpha: 0.08)),
                       padding: const WidgetStatePropertyAll(
@@ -267,7 +267,7 @@ class LandingScreen extends StatelessWidget {
                       ),
                       elevation: const WidgetStatePropertyAll(0),
                       shape: WidgetStatePropertyAll(
-                        RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
                     ),
                     child: const Text(
@@ -291,31 +291,31 @@ const _categories = [
     title: 'Web Development',
     desc: 'Build landing pages, web apps, and everything in between.',
     icon: Icons.code,
-    color: Color(0xFF1e3a5f),
+    color: Color(0xFF1A1D2B),
   ),
   (
     title: 'Graphic Design',
     desc: 'Brand identity, logos, social content — make it iconic.',
     icon: Icons.palette,
-    color: Color(0xFF2d1b4e),
+    color: Color(0xFF6B21A8),
   ),
   (
     title: 'Cybersecurity',
     desc: 'Pen testing, compliance audits, and threat analysis.',
     icon: Icons.shield,
-    color: Color(0xFF0f2d1e),
+    color: Color(0xFF0D47A1),
   ),
   (
     title: 'Marketing',
     desc: 'Drive results with strategy and student-led execution.',
     icon: Icons.campaign,
-    color: Color(0xFF1a3d28),
+    color: Color(0xFFE53935),
   ),
   (
     title: 'Data Science',
     desc: 'Analytics, ML models, dashboards and data pipelines.',
     icon: Icons.bar_chart,
-    color: Color(0xFF2a1060),
+    color: Color(0xFF1565C0),
   ),
 ];
 
@@ -329,11 +329,11 @@ class _CategoryCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: AppColors.cardShadowLight,
       ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(12),
         onTap: () => context.go('/jobs'),
         child: Padding(
           padding: const EdgeInsets.all(18),
@@ -344,7 +344,7 @@ class _CategoryCard extends StatelessWidget {
                 height: 52,
                 decoration: BoxDecoration(
                   color: cat.color.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(cat.icon, color: cat.color, size: 24),
               ),
@@ -398,7 +398,7 @@ class _StatItem extends StatelessWidget {
         Text(value,
             style: const TextStyle(
                 fontSize: 18,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w800,
                 color: AppColors.navy)),
         const SizedBox(height: 2),
         Text(label,

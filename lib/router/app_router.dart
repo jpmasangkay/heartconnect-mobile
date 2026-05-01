@@ -93,7 +93,14 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(path: '/', builder: (_, __) => const LandingScreen()),
       GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
-      GoRoute(path: '/register', builder: (_, __) => const RegisterScreen()),
+      GoRoute(
+        path: '/register',
+        builder: (_, state) {
+          final extra = state.extra;
+          final googleToken = extra is Map<String, dynamic> ? extra['googleToken'] as String? : null;
+          return RegisterScreen(googleToken: googleToken);
+        },
+      ),
       GoRoute(path: '/forgot-password', builder: (_, __) => const ForgotPasswordScreen()),
       GoRoute(path: '/reset-password', builder: (_, __) => const ForgotPasswordScreen()),
       GoRoute(path: '/terms', builder: (_, __) => const TermsScreen()),

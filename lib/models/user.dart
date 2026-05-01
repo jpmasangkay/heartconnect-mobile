@@ -29,6 +29,10 @@ class User {
   // Presence
   final String? lastSeen;
 
+  // OAuth
+  final String? googleId;
+  final String? authProvider;
+
   User({
     required this.id,
     required this.name,
@@ -49,6 +53,8 @@ class User {
     this.hasCompletedOnboarding = false,
     this.agreedToTerms = false,
     this.lastSeen,
+    this.googleId,
+    this.authProvider,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -72,6 +78,8 @@ class User {
       hasCompletedOnboarding: json['hasCompletedOnboarding'] ?? false,
       agreedToTerms: json['agreedToTerms'] ?? false,
       lastSeen: json['lastSeen'],
+      googleId: json['googleId'],
+      authProvider: json['authProvider'],
     );
   }
 
@@ -95,6 +103,8 @@ class User {
         'hasCompletedOnboarding': hasCompletedOnboarding,
         'agreedToTerms': agreedToTerms,
         'lastSeen': lastSeen,
+        'googleId': googleId,
+        'authProvider': authProvider,
       };
 
   User copyWith({

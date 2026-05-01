@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import '../services/report_service.dart';
 import '../theme/app_theme.dart';
 
@@ -76,7 +76,7 @@ class _ReportDialogState extends State<ReportDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: AppColors.surface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -84,23 +84,23 @@ class _ReportDialogState extends State<ReportDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Report ${widget.targetType == 'user' ? 'User' : 'Job'}',
-                style: GoogleFonts.dmSans(
+                style: const TextStyle(
                     fontWeight: FontWeight.w800, fontSize: 20, color: AppColors.navy)),
             if (widget.targetName != null) ...[
               const SizedBox(height: 4),
               Text(widget.targetName!,
-                  style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 13)),
+                  style: const TextStyle(color: AppColors.textMuted, fontSize: 13)),
             ],
             const SizedBox(height: 20),
-            Text('Reason',
-                style: GoogleFonts.inter(
+            const Text('Reason',
+                style: TextStyle(
                     fontWeight: FontWeight.w600, fontSize: 14, color: AppColors.textBody)),
             const SizedBox(height: 8),
             ...{ for (final r in _reasons) r }.map((r) => RadioListTile<String>(
                   value: r,
                   groupValue: _reason,
                   onChanged: (v) => setState(() => _reason = v),
-                  title: Text(r, style: GoogleFonts.inter(fontSize: 14)),
+                  title: Text(r, style: const TextStyle(fontSize: 14)),
                   dense: true,
                   contentPadding: EdgeInsets.zero,
                   activeColor: AppColors.navy,
@@ -118,7 +118,7 @@ class _ReportDialogState extends State<ReportDialog> {
             if (_error != null) ...[
               const SizedBox(height: 8),
               Text(_error!,
-                  style: GoogleFonts.inter(fontSize: 13, color: Colors.red)),
+                  style: const TextStyle(fontSize: 13, color: Colors.red)),
             ],
             const SizedBox(height: 20),
             Row(

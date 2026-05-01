@@ -230,7 +230,7 @@ class _EditJobScreenState extends State<EditJobScreen> {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(12),
             boxShadow: AppColors.cardShadow,
           ),
           child: Column(
@@ -288,7 +288,7 @@ class _EditJobScreenState extends State<EditJobScreen> {
                   decoration: BoxDecoration(
                     color: AppColors.cream,
                     border: Border.all(color: AppColors.border.withValues(alpha: 0.1)),
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(children: [
                     const Icon(Icons.calendar_today, size: 15, color: AppColors.textMuted),
@@ -393,7 +393,7 @@ class _Dropdown<T> extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.cream,
         border: Border.all(color: AppColors.border.withValues(alpha: 0.1)),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<T>(

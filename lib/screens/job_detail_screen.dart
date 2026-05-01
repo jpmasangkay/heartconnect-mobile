@@ -252,7 +252,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                         StatusBadge(job.status),
                       ]),
                       const SizedBox(height: 10),
-                      Text(job.title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: AppColors.navy, height: 1.2)),
+                      Text(job.title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.navy, height: 1.2)),
                       const SizedBox(height: 6),
                       Row(children: [
                         const Icon(Icons.person_outline_rounded, size: 14, color: AppColors.textMuted),
@@ -579,11 +579,11 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
 
   Color _gradientColor(String cat) {
     switch (cat) {
-      case 'Web Development': return const Color(0xFF1e3a5f);
-      case 'Graphic Design': return const Color(0xFF2d1b4e);
-      case 'Cybersecurity': return const Color(0xFF0f2d1e);
-      case 'Marketing': return const Color(0xFF1a3d28);
-      case 'Data Science': return const Color(0xFF2a1060);
+      case 'Web Development': return const Color(0xFF1A1D2B);
+      case 'Graphic Design': return const Color(0xFF6B21A8);
+      case 'Cybersecurity': return const Color(0xFF0D47A1);
+      case 'Marketing': return const Color(0xFFE53935);
+      case 'Data Science': return const Color(0xFF1565C0);
       default: return AppColors.navy;
     }
   }
@@ -722,7 +722,7 @@ class _AppCard extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.cream,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: AppColors.cardShadowLight,
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -819,7 +819,7 @@ class _Card extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: AppColors.cardShadow,
       ),
       child: child,

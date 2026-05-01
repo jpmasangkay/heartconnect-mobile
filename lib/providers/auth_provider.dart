@@ -186,6 +186,26 @@ class AuthNotifier extends Notifier<AuthState> {
     state = state.copyWith(user: updatedUser);
   }
 
+  /// Google OAuth login. Returns true if needs role selection.
+  Future<bool> googleLogin(String idToken, {String? role}) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final result = await _service.googleLogin(idToken, role);
+      if (result.needsRole) {
+        state = state.copyWith(isLoading: false);
+        return true;
+      }
+      state = AuthState(user: result.user, token: result.token);
+      return false;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: _service.extractError(e),
+      );
+      rethrow;
+    }
+  }
+
   Future<void> markOnboardingComplete() async {
     try {
       await _service.markOnboardingComplete();

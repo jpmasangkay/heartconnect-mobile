@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import '../providers/auth_provider.dart';
 import '../services/chat_service.dart';
 import '../services/notification_service.dart';
@@ -213,7 +213,6 @@ class _MainScreenState extends ConsumerState<MainScreen> with WidgetsBindingObse
           isClient: isClient,
           unreadChat: _unreadChat,
           unreadNotif: _unreadNotif,
-          onNotif: () => context.push('/notifications'),
           onTap: (i) {
             final branchIndex = isClient
                 ? switch (i) { 0 => 0, 1 => 2, 2 => 3, _ => 0 }
@@ -236,7 +235,6 @@ class _BottomNav extends StatelessWidget {
   final int currentIndex;
   final bool isClient;
   final int unreadChat, unreadNotif;
-  final VoidCallback onNotif;
   final ValueChanged<int> onTap;
 
   const _BottomNav({
@@ -244,24 +242,23 @@ class _BottomNav extends StatelessWidget {
     required this.isClient,
     required this.unreadChat,
     required this.unreadNotif,
-    required this.onNotif,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Nav items
+    // Figma nav: Jobs, Search, Applications, Messages, Profile
     final items = <_Item>[
       _Item(
         icon: Icons.home_outlined,
         activeIcon: Icons.home_rounded,
-        label: isClient ? 'My Jobs' : 'Home',
+        label: 'Jobs',
       ),
       if (!isClient)
         const _Item(
-          icon: Icons.grid_view_outlined,
-          activeIcon: Icons.grid_view_rounded,
-          label: 'Browse',
+          icon: Icons.search,
+          activeIcon: Icons.search,
+          label: 'Search',
         ),
       _Item(
         icon: Icons.chat_bubble_outline_rounded,
@@ -279,7 +276,7 @@ class _BottomNav extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: AppColors.rule.withValues(alpha: 0.6), width: 1)),
+        border: Border(top: BorderSide(color: AppColors.border.withValues(alpha: 0.5), width: 1)),
       ),
       child: SafeArea(
         top: false,
@@ -293,8 +290,6 @@ class _BottomNav extends StatelessWidget {
                   isActive: currentIndex == i,
                   onTap: () => onTap(i),
                 ),
-              // Notification bell — treated as a "ghost" tab at the right edge
-              _NotifItem(count: unreadNotif, onTap: onNotif),
             ],
           ),
         ),
@@ -318,6 +313,7 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final color = isActive ? AppColors.accent : AppColors.muted;
     return Expanded(
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -331,7 +327,7 @@ class _NavItem extends StatelessWidget {
                 Icon(
                   isActive ? item.activeIcon : item.icon,
                   size: 22,
-                  color: isActive ? AppColors.ink : AppColors.muted,
+                  color: color,
                 ),
                 if (item.badge > 0)
                   Positioned(
@@ -341,13 +337,13 @@ class _NavItem extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                       constraints: const BoxConstraints(minWidth: 16),
                       decoration: BoxDecoration(
-                        color: AppColors.rust,
+                        color: AppColors.accent,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(color: Colors.white, width: 1.5),
                       ),
                       child: Text(
                         item.badge > 99 ? '99+' : '${item.badge}',
-                        style: GoogleFonts.inter(
+                        style: const TextStyle(
                           fontSize: 8, fontWeight: FontWeight.w800, color: Colors.white),
                         textAlign: TextAlign.center,
                       ),
@@ -356,87 +352,11 @@ class _NavItem extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 3),
-            AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 150),
-              style: GoogleFonts.inter(
+            Text(item.label,
+              style: TextStyle(
                 fontSize: 10,
-                fontWeight: isActive ? FontWeight.w700 : FontWeight.w400,
-                color: isActive ? AppColors.ink : AppColors.muted,
-              ),
-              child: Text(item.label),
-            ),
-            const SizedBox(height: 2),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              height: 2,
-              width: isActive ? 18 : 0,
-              decoration: BoxDecoration(
-                color: AppColors.ink,
-                borderRadius: BorderRadius.circular(1),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _NotifItem extends StatelessWidget {
-  final int count;
-  final VoidCallback onTap;
-  const _NotifItem({required this.count, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Icon(
-                  count > 0 ? Icons.notifications_rounded : Icons.notifications_outlined,
-                  size: 22,
-                  color: count > 0 ? AppColors.rust : AppColors.muted,
-                ),
-                if (count > 0)
-                  Positioned(
-                    top: -4,
-                    right: -6,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                      constraints: const BoxConstraints(minWidth: 16),
-                      decoration: BoxDecoration(
-                        color: AppColors.rust,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.white, width: 1.5),
-                      ),
-                      child: Text(
-                        count > 99 ? '99+' : '$count',
-                        style: GoogleFonts.inter(
-                          fontSize: 8, fontWeight: FontWeight.w800, color: Colors.white),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 3),
-            Text('Notifs',
-                style: GoogleFonts.inter(fontSize: 10, color: AppColors.muted, fontWeight: FontWeight.w400)),
-            const SizedBox(height: 2),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              height: 2,
-              width: 0,
-              decoration: BoxDecoration(
-                color: AppColors.ink,
-                borderRadius: BorderRadius.circular(1),
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                color: color,
               ),
             ),
           ],

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import '../models/user.dart';
 import '../services/block_service.dart';
 import '../theme/app_theme.dart';
@@ -71,8 +71,8 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                       Icon(Icons.block_rounded,
                           size: 64, color: AppColors.textMuted.withValues(alpha: 0.1)),
                       const SizedBox(height: 16),
-                      Text('No blocked users',
-                          style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 16)),
+                      const Text('No blocked users',
+                          style: TextStyle(color: AppColors.textMuted, fontSize: 16)),
                     ],
                   ),
                 )
@@ -86,13 +86,13 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                       final user = _users[index];
                       return ListTile(
                         leading: CircleAvatar(
-                          backgroundColor: AppColors.navy.withValues(alpha: 0.1),
+                          backgroundColor: AppColors.navy.withValues(alpha: 0.08),
                           child: Text(user.initials,
-                              style: GoogleFonts.dmSans(
+                              style: const TextStyle(
                                   fontWeight: FontWeight.w700, color: AppColors.navy)),
                         ),
                         title: Text(user.name,
-                            style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                            style: const TextStyle(fontWeight: FontWeight.w600)),
                         trailing: OutlinedButton(
                           onPressed: () => _unblock(user),
                           style: OutlinedButton.styleFrom(

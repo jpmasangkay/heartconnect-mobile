@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import '../models/job.dart';
 import '../services/saved_job_service.dart';
 import '../theme/app_theme.dart';
@@ -117,11 +117,11 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
                       Icon(Icons.bookmark_border_rounded,
                           size: 64, color: AppColors.textMuted.withValues(alpha: 0.1)),
                       const SizedBox(height: 16),
-                      Text('No saved jobs',
-                          style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 16)),
+                      const Text('No saved jobs',
+                          style: TextStyle(color: AppColors.textMuted, fontSize: 16)),
                       const SizedBox(height: 8),
-                      Text('Save jobs you\'re interested in to see them here',
-                          style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 13)),
+                      const Text('Save jobs you\'re interested in to see them here',
+                          style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
                     ],
                   ),
                 )
@@ -144,11 +144,11 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
                         child: Container(
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(12),
                             boxShadow: AppColors.cardShadow,
                           ),
                           child: InkWell(
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(12),
                             onTap: () => context.push('/jobs/${job.id}'),
                             child: Padding(
                               padding: const EdgeInsets.all(20),
@@ -159,7 +159,7 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
                                     children: [
                                       Expanded(
                                         child: Text(job.title,
-                                            style: GoogleFonts.dmSans(
+                                            style: const TextStyle(
                                               fontWeight: FontWeight.w700,
                                               fontSize: 16,
                                               color: AppColors.navy,
@@ -177,7 +177,7 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(job.clientName,
-                                      style: GoogleFonts.inter(
+                                      style: const TextStyle(
                                         fontSize: 13,
                                         color: AppColors.textMuted,
                                       )),
@@ -239,7 +239,7 @@ class _Tag extends StatelessWidget {
           Icon(icon, size: 14, color: c),
           const SizedBox(width: 4),
           Text(label,
-              style: GoogleFonts.inter(fontSize: 12, color: c, fontWeight: FontWeight.w600)),
+              style: TextStyle(fontSize: 12, color: c, fontWeight: FontWeight.w600)),
         ],
       ),
     );

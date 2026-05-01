@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 
 class TermsScreen extends StatelessWidget {
@@ -14,12 +13,12 @@ class TermsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Terms of Service',
-                style: GoogleFonts.dmSans(
+            const Text('Terms of Service',
+                style: TextStyle(
                     fontWeight: FontWeight.w800, fontSize: 24, color: AppColors.navy)),
             const SizedBox(height: 8),
-            Text('Last updated: March 2026',
-                style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 13)),
+            const Text('Last updated: March 2026',
+                style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
             const SizedBox(height: 24),
             _section('1. Acceptance of Terms',
                 'By accessing or using HeartConnect, you agree to be bound by these Terms of Service. If you do not agree, you may not use the platform.'),
@@ -54,11 +53,11 @@ class TermsScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(title,
-              style: GoogleFonts.dmSans(
+              style: const TextStyle(
                   fontWeight: FontWeight.w700, fontSize: 16, color: AppColors.navy)),
           const SizedBox(height: 8),
           Text(content,
-              style: GoogleFonts.inter(
+              style: const TextStyle(
                   color: AppColors.textBody, fontSize: 14, height: 1.6)),
         ],
       ),

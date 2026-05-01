@@ -147,4 +147,30 @@ class AuthService extends ApiService {
   Future<void> markOnboardingComplete() async {
     await dio.patch('/auth/onboarding-complete');
   }
+
+  /// Google OAuth login / registration.
+  /// Returns token + user, or {needsRole: true} if the user is new and no role was provided.
+  Future<({String? token, User? user, bool needsRole, bool isNewUser})> googleLogin(
+      String idToken, String? role) async {
+    final body = <String, dynamic>{
+      'idToken': idToken,
+      if (role != null) 'role': role,
+    };
+
+    final res = await dio.post('/auth/google', data: body);
+    final data = res.data as Map<String, dynamic>;
+
+    if (data['needsRole'] == true) {
+      return (token: null, user: null, needsRole: true, isNewUser: false);
+    }
+
+    final token = data['token'] as String;
+    await ApiService.setToken(token);
+    return (
+      token: token,
+      user: User.fromJson(data['user'] as Map<String, dynamic>),
+      needsRole: false,
+      isNewUser: data['isNewUser'] == true,
+    );
+  }
 }

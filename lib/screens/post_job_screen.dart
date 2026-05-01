@@ -131,7 +131,7 @@ class _PostJobScreenState extends ConsumerState<PostJobScreen> {
                     letterSpacing: 1.5, color: AppColors.textMuted)),
             const SizedBox(height: 6),
             const Text('Create a new job listing',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: AppColors.navy)),
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.navy)),
             const SizedBox(height: 4),
             const Text('Reach talented students ready for your project.',
                 style: TextStyle(fontSize: 13, color: AppColors.textMuted)),
@@ -141,7 +141,7 @@ class _PostJobScreenState extends ConsumerState<PostJobScreen> {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(12),
                 boxShadow: AppColors.cardShadow,
               ),
               child: Column(
@@ -206,7 +206,7 @@ class _PostJobScreenState extends ConsumerState<PostJobScreen> {
                           decoration: BoxDecoration(
                             color: AppColors.cream,
                             border: Border.all(color: AppColors.border.withValues(alpha: 0.1)),
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: DropdownButtonHideUnderline(
                             child: DropdownButton<String>(
@@ -234,7 +234,7 @@ class _PostJobScreenState extends ConsumerState<PostJobScreen> {
                       decoration: BoxDecoration(
                         color: AppColors.cream,
                         border: Border.all(color: AppColors.border.withValues(alpha: 0.1)),
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(children: [
                         const Icon(Icons.calendar_today, size: 15, color: AppColors.textMuted),
@@ -290,7 +290,7 @@ class _PostJobScreenState extends ConsumerState<PostJobScreen> {
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: AppColors.creamDark,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: AppColors.border.withValues(alpha: 0.1)),
                         ),
                         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

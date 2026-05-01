@@ -172,7 +172,7 @@ class _JobBoardScreenState extends ConsumerState<JobBoardScreen> {
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [Color(0xFF1C3A28), Color(0xFF2D5C3E)],
+                      colors: [Color(0xFF1A1D2B), Color(0xFF2A2D3B)],
                     ),
                   ),
                   child: SafeArea(
@@ -186,14 +186,14 @@ class _JobBoardScreenState extends ConsumerState<JobBoardScreen> {
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Text('BROWSE OPPORTUNITIES',
                                 style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1.5, color: Colors.white70)),
                           ),
                           const SizedBox(height: 8),
                           const Text('Find Your Next Gig',
-                              style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: Colors.white)),
+                              style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: Colors.white)),
                         ],
                       ),
                     ),
@@ -251,7 +251,7 @@ class _JobBoardScreenState extends ConsumerState<JobBoardScreen> {
                         height: 170,
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(12),
                           boxShadow: AppColors.cardShadowLight,
                         ),
                         padding: const EdgeInsets.all(16),
@@ -401,9 +401,9 @@ class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
               contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
               filled: true,
               fillColor: Colors.white,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: AppColors.border.withValues(alpha: 0.1))),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: AppColors.border.withValues(alpha: 0.1))),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.navy, width: 1.5)),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: AppColors.border)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: AppColors.border)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.navy, width: 1.5)),
             ),
             onSubmitted: (_) => onSearch(),
           ),
@@ -416,8 +416,8 @@ class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
             width: 48,
             decoration: BoxDecoration(
               color: hasFilters ? AppColors.navy : Colors.white,
-              border: Border.all(color: hasFilters ? AppColors.navy : AppColors.border.withValues(alpha: 0.1)),
-              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: hasFilters ? AppColors.navy : AppColors.border),
+              borderRadius: BorderRadius.circular(8),
             ),
             child: Stack(
               alignment: Alignment.center,
@@ -576,8 +576,8 @@ class _FilterChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: selected ? AppColors.navy : Colors.white,
-          border: Border.all(color: selected ? AppColors.navy : AppColors.border.withValues(alpha: 0.1)),
-          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: selected ? AppColors.navy : AppColors.border),
+          borderRadius: BorderRadius.circular(20),
         ),
         child: Text(label,
             style: TextStyle(
@@ -602,13 +602,13 @@ class _JobCard extends StatelessWidget {
 
     return Material(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(12),
       child: InkWell(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(12),
         onTap: () => context.push('/jobs/${job.id}'),
         child: Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(12),
             boxShadow: isUrgent
                 ? [BoxShadow(color: Colors.red.withValues(alpha: 0.1), blurRadius: 16, offset: const Offset(0, 4))]
                 : AppColors.cardShadowLight,
@@ -621,7 +621,7 @@ class _JobCard extends StatelessWidget {
                 height: 4,
                 decoration: BoxDecoration(
                   color: _categoryColor(job.category),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(19)),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(11)),
                 ),
               ),
               Padding(
@@ -669,7 +669,7 @@ class _JobCard extends StatelessWidget {
                           children: job.skills.take(3).map((s) => SkillChip(s)).toList()),
                     ],
                     const SizedBox(height: 14),
-                    Container(height: 1, color: AppColors.border.withValues(alpha: 0.1)),
+                    Container(height: 1, color: AppColors.border.withValues(alpha: 0.5)),
                     const SizedBox(height: 12),
                     Row(children: [
                       Icon(Icons.monetization_on_outlined, size: 16, color: AppColors.navy.withValues(alpha: 0.1)),
@@ -710,11 +710,11 @@ class _JobCard extends StatelessWidget {
 
   Color _categoryColor(String cat) {
     switch (cat) {
-      case 'Web Development': return const Color(0xFF1e3a5f);
-      case 'Graphic Design': return const Color(0xFF4a1b6e);
-      case 'Cybersecurity': return const Color(0xFF0f2d1e);
-      case 'Marketing': return const Color(0xFF1a3d28);
-      case 'Data Science': return const Color(0xFF2a1060);
+      case 'Web Development': return const Color(0xFF1A1D2B);
+      case 'Graphic Design': return const Color(0xFF6B21A8);
+      case 'Cybersecurity': return const Color(0xFF0D47A1);
+      case 'Marketing': return const Color(0xFFE53935);
+      case 'Data Science': return const Color(0xFF1565C0);
       default: return AppColors.navy;
     }
   }

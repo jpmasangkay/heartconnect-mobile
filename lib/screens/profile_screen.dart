@@ -143,7 +143,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 decoration: BoxDecoration(
                   color: const Color(0xFFDCFCE7),
                   border: Border.all(color: const Color(0xFF86EFAC).withValues(alpha: 0.1)),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(children: [
                   const Icon(Icons.check, size: 14, color: Color(0xFF16A34A)),
@@ -404,7 +404,7 @@ class _Section extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(12),
           boxShadow: AppColors.cardShadow,
         ),
         child: child,

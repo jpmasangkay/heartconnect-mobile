@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import '../services/auth_service.dart';
 import '../services/review_service.dart';
 import '../services/block_service.dart';
@@ -271,9 +271,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     Icon(Icons.star_rounded, size: 16, color: const Color(0xFFF59E0B)),
                     const SizedBox(width: 4),
                     Text(_avgRating.toStringAsFixed(1),
-                        style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 14)),
+                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
                     Text(' (${_reviews.length})',
-                        style: GoogleFonts.inter(fontSize: 12, color: AppColors.textMuted)),
+                        style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
                   ]),
                   const SizedBox(height: 12),
                   ..._reviews.take(5).map((r) => Padding(
@@ -289,12 +289,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           )),
                           const SizedBox(width: 8),
                           Text(r.reviewer?.name ?? 'Anonymous',
-                              style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
+                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
                         ]),
                         if (r.comment.isNotEmpty) ...[
                           const SizedBox(height: 4),
                           Text(r.comment,
-                              style: GoogleFonts.inter(fontSize: 13, color: AppColors.textBody)),
+                              style: const TextStyle(fontSize: 13, color: AppColors.textBody)),
                         ],
                       ],
                     ),
@@ -333,7 +333,7 @@ class _Section extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(12),
           boxShadow: AppColors.cardShadow,
         ),
         child: child,

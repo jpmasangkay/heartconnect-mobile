@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import '../providers/auth_provider.dart';
 import '../services/job_service.dart';
 import '../services/application_service.dart';
@@ -68,10 +68,10 @@ const _muted = AppColors.muted;
 const _rule = AppColors.rule;
 
 TextStyle _label(double size, {Color color = AppColors.muted, FontWeight fw = FontWeight.w500}) =>
-    GoogleFonts.inter(fontSize: size, color: color, fontWeight: fw);
+    TextStyle(fontSize: size, color: color, fontWeight: fw);
 
 TextStyle _serif(double size, {Color color = AppColors.ink}) =>
-    GoogleFonts.inter(fontSize: size, color: color, fontWeight: FontWeight.w800);
+    TextStyle(fontSize: size, color: color, fontWeight: FontWeight.w800);
 
 // ─────────────────────────────────────────────
 //  STUDENT HOME
@@ -85,11 +85,14 @@ class _StudentHome extends ConsumerStatefulWidget {
 
 class _StudentHomeState extends ConsumerState<_StudentHome> {
   List<Application> _apps = [];
+  List<Job> _recommended = [];
   bool _loading = true;
+  bool _recsLoading = true;
   @override
   void initState() {
     super.initState();
     _load();
+    _loadRecommended();
   }
 
   @override
@@ -103,6 +106,15 @@ class _StudentHomeState extends ConsumerState<_StudentHome> {
       if (mounted) setState(() { _apps = apps.where((a) => a.job != null).toList(); _loading = false; });
     } catch (_) {
       if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _loadRecommended() async {
+    try {
+      final recs = await JobService.instance.getRecommended(limit: 6);
+      if (mounted) setState(() { _recommended = recs; _recsLoading = false; });
+    } catch (_) {
+      if (mounted) setState(() => _recsLoading = false);
     }
   }
 
@@ -163,7 +175,7 @@ class _StudentHomeState extends ConsumerState<_StudentHome> {
                               child: Center(
                                 child: Text(
                                   firstName.isNotEmpty ? firstName[0].toUpperCase() : '?',
-                                  style: GoogleFonts.inter(
+                                  style: const TextStyle(
                                       fontWeight: FontWeight.w800, color: Colors.white, fontSize: 18),
                                 ),
                               ),
@@ -207,6 +219,40 @@ class _StudentHomeState extends ConsumerState<_StudentHome> {
                 child: const Divider(color: _rule, thickness: 1, height: 1),
               ),
             ),
+
+            // ── Recommended Jobs ──────────────────────────────────────
+            if (!_recsLoading && _recommended.isNotEmpty) ...[
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.auto_awesome, size: 16, color: _rust),
+                      const SizedBox(width: 8),
+                      Text('Recommended for You', style: _serif(18)),
+                    ],
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 130,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    itemCount: _recommended.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 12),
+                    itemBuilder: (_, i) => _RecommendedJobCard(job: _recommended[i]),
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                  child: const Divider(color: _rule, thickness: 1, height: 1),
+                ),
+              ),
+            ],
 
             // ── Browse CTA or section header ──────────────────────────
             SliverToBoxAdapter(
@@ -394,7 +440,7 @@ class _ClientHomeState extends ConsumerState<_ClientHome> {
                               child: Center(
                                 child: Text(
                                   firstName.isNotEmpty ? firstName[0].toUpperCase() : '?',
-                                  style: GoogleFonts.inter(fontWeight: FontWeight.w800, color: Colors.white, fontSize: 18),
+                                  style: const TextStyle(fontWeight: FontWeight.w800, color: Colors.white, fontSize: 18),
                                 ),
                               ),
                             ),
@@ -541,7 +587,7 @@ class _StudentAppCardState extends State<_StudentAppCard> {
           Row(children: [
             Expanded(
               child: Text(job.title,
-                  style: GoogleFonts.inter(fontWeight: FontWeight.w800, fontSize: 16, color: _ink),
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: _ink),
                   maxLines: 1, overflow: TextOverflow.ellipsis),
             ),
             const SizedBox(width: 8),
@@ -611,7 +657,7 @@ class _ClientJobCard extends StatelessWidget {
           Row(children: [
             Expanded(
               child: Text(job.title,
-                  style: GoogleFonts.inter(fontWeight: FontWeight.w800, fontSize: 16, color: _ink),
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: _ink),
                   maxLines: 1, overflow: TextOverflow.ellipsis),
             ),
             const SizedBox(width: 8),
@@ -669,7 +715,7 @@ class _StatCell extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 18),
         child: Column(children: [
           Text(value,
-              style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w800, color: c)),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: c)),
           const SizedBox(height: 2),
           Text(label, style: _label(10, fw: FontWeight.w600).copyWith(letterSpacing: 0.8)),
         ]),
@@ -751,7 +797,7 @@ class _EmptySlate extends StatelessWidget {
         borderRadius: BorderRadius.circular(4),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(label, style: GoogleFonts.inter(fontSize: 17, fontWeight: FontWeight.w800, color: _ink)),
+        Text(label, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: _ink)),
         const SizedBox(height: 6),
         Text(sub, style: _label(13, color: _muted)),
         const SizedBox(height: 16),
@@ -764,6 +810,53 @@ class _EmptySlate extends StatelessWidget {
           ]),
         ),
       ]),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+//  Recommended job card (horizontal scroll)
+// ─────────────────────────────────────────────
+class _RecommendedJobCard extends StatelessWidget {
+  final Job job;
+  const _RecommendedJobCard({required this.job});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => context.push('/jobs/${job.id}'),
+      child: Container(
+        width: 220,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _rule.withValues(alpha: 0.3)),
+          boxShadow: [
+            BoxShadow(color: _ink.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2)),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.auto_awesome, size: 12, color: _rust.withValues(alpha: 0.7)),
+                const SizedBox(width: 4),
+                Text('AI Match', style: _label(9, color: _rust, fw: FontWeight.w700)),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(job.title,
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: _ink),
+                maxLines: 2, overflow: TextOverflow.ellipsis),
+            const Spacer(),
+            Text('${job.category}  ·  ₱${_fmt(job.budget)}',
+                style: _label(11, color: _muted),
+                maxLines: 1, overflow: TextOverflow.ellipsis),
+          ],
+        ),
+      ),
     );
   }
 }

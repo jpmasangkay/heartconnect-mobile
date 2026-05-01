@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import '../providers/auth_provider.dart';
 import '../theme/app_theme.dart';
 
@@ -75,7 +75,7 @@ class _TwoFactorVerifyDialogState extends ConsumerState<TwoFactorVerifyDialog> {
 
     return Dialog(
       backgroundColor: AppColors.surface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -95,15 +95,15 @@ class _TwoFactorVerifyDialogState extends ConsumerState<TwoFactorVerifyDialog> {
               ),
             ),
             const SizedBox(height: 16),
-            Text('Two-Factor Verification',
-                style: GoogleFonts.dmSans(
+            const Text('Two-Factor Verification',
+                style: TextStyle(
                     fontWeight: FontWeight.w800, fontSize: 20, color: AppColors.navy)),
             const SizedBox(height: 8),
             Text(
               isEmail
                   ? 'Enter the 6-digit code sent to your email'
                   : 'Enter the code from your authenticator app',
-              style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 14),
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 14),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -112,7 +112,7 @@ class _TwoFactorVerifyDialogState extends ConsumerState<TwoFactorVerifyDialog> {
               keyboardType: TextInputType.number,
               maxLength: 6,
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
+              style: const TextStyle(
                   fontSize: 24, fontWeight: FontWeight.w700, letterSpacing: 8),
               decoration: const InputDecoration(
                 hintText: '000000',
@@ -123,14 +123,14 @@ class _TwoFactorVerifyDialogState extends ConsumerState<TwoFactorVerifyDialog> {
             if (_error != null) ...[
               const SizedBox(height: 8),
               Text(_error!,
-                  style: GoogleFonts.inter(fontSize: 13, color: Colors.red)),
+                  style: const TextStyle(fontSize: 13, color: Colors.red)),
             ],
             if (isEmail) ...[
               const SizedBox(height: 8),
               TextButton(
                 onPressed: _loading ? null : _resendEmailCode,
-                child: Text('Resend code',
-                    style: GoogleFonts.inter(
+                child: const Text('Resend code',
+                    style: TextStyle(
                         color: AppColors.accent, fontWeight: FontWeight.w600)),
               ),
             ],

@@ -84,24 +84,23 @@ class SkillChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(left: 12, right: onRemove != null ? 6 : 12, top: 6, bottom: 6),
+      padding: EdgeInsets.only(left: 10, right: onRemove != null ? 6 : 10, top: 5, bottom: 5),
       decoration: BoxDecoration(
-        color: selected ? AppColors.navy : AppColors.cream,
-        border: Border.all(color: selected ? AppColors.navy : AppColors.border.withValues(alpha: 0.1)),
-        borderRadius: BorderRadius.circular(24),
+        color: AppColors.navy,
+        borderRadius: BorderRadius.circular(4),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(label,
-              style: TextStyle(
-                  fontSize: 12, fontWeight: FontWeight.w500,
-                  color: selected ? Colors.white : AppColors.textBody)),
+              style: const TextStyle(
+                  fontSize: 11, fontWeight: FontWeight.w500,
+                  color: Colors.white)),
           if (onRemove != null) ...[
             const SizedBox(width: 4),
             GestureDetector(
               onTap: onRemove,
-              child: Icon(Icons.close, size: 14, color: selected ? Colors.white70 : AppColors.textMuted),
+              child: const Icon(Icons.close, size: 14, color: Colors.white70),
             ),
           ]
         ],
@@ -157,7 +156,7 @@ class ErrorBanner extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFFEE2E2),
         border: Border.all(color: const Color(0xFFFCA5A5).withValues(alpha: 0.1)),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         children: [
@@ -236,7 +235,7 @@ class StatStrip extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: AppColors.cardShadow,
       ),
       child: Row(
@@ -256,7 +255,7 @@ class StatStrip extends StatelessWidget {
                     children: [
                       Text(s.value,
                           style: TextStyle(
-                              fontSize: 24, fontWeight: FontWeight.w900,
+                              fontSize: 24, fontWeight: FontWeight.w800,
                               color: s.accent ? AppColors.accent : AppColors.navy)),
                       if (s.pulse && int.tryParse(s.value) != null && int.parse(s.value) > 0) ...[
                         const SizedBox(width: 4),
@@ -335,7 +334,7 @@ class MobileActionButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: color ?? AppColors.navy,
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           minimumSize: const Size(double.infinity, 56),
         ),
         child: loading

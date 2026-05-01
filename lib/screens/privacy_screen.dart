@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 
 class PrivacyScreen extends StatelessWidget {
@@ -14,12 +13,12 @@ class PrivacyScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Privacy Policy',
-                style: GoogleFonts.dmSans(
+            const Text('Privacy Policy',
+                style: TextStyle(
                     fontWeight: FontWeight.w800, fontSize: 24, color: AppColors.navy)),
             const SizedBox(height: 8),
-            Text('Last updated: March 2026',
-                style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 13)),
+            const Text('Last updated: March 2026',
+                style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
             const SizedBox(height: 24),
             _section('1. Information We Collect',
                 'We collect information you provide directly: name, email, university, profile data, and any content you post. We also collect usage data such as login times and feature usage.'),
@@ -54,11 +53,11 @@ class PrivacyScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(title,
-              style: GoogleFonts.dmSans(
+              style: const TextStyle(
                   fontWeight: FontWeight.w700, fontSize: 16, color: AppColors.navy)),
           const SizedBox(height: 8),
           Text(content,
-              style: GoogleFonts.inter(
+              style: const TextStyle(
                   color: AppColors.textBody, fontSize: 14, height: 1.6)),
         ],
       ),

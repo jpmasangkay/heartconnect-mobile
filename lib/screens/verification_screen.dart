@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:image_picker/image_picker.dart';
 import '../services/verification_service.dart';
 import '../theme/app_theme.dart';
@@ -119,8 +119,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
                           const Icon(Icons.verified_rounded,
                               size: 80, color: Color(0xFF16A34A)),
                           const SizedBox(height: 16),
-                          Text('Your profile is verified!',
-                              style: GoogleFonts.dmSans(
+                          const Text('Your profile is verified!',
+                              style: TextStyle(
                                   fontWeight: FontWeight.w700,
                                   fontSize: 20,
                                   color: AppColors.navy)),
@@ -134,27 +134,27 @@ class _VerificationScreenState extends State<VerificationScreen> {
                           const Icon(Icons.hourglass_top_rounded,
                               size: 80, color: Color(0xFFD97706)),
                           const SizedBox(height: 16),
-                          Text('Verification pending',
-                              style: GoogleFonts.dmSans(
+                          const Text('Verification pending',
+                              style: TextStyle(
                                   fontWeight: FontWeight.w700,
                                   fontSize: 20,
                                   color: AppColors.navy)),
                           const SizedBox(height: 8),
-                          Text('An admin will review your submission soon.',
-                              style: GoogleFonts.inter(
+                          const Text('An admin will review your submission soon.',
+                              style: TextStyle(
                                   color: AppColors.textMuted, fontSize: 14)),
                         ],
                       ),
                     ),
                   ] else ...[
-                    Text('Get Verified',
-                        style: GoogleFonts.dmSans(
+                    const Text('Get Verified',
+                        style: TextStyle(
                             fontWeight: FontWeight.w800,
                             fontSize: 24,
                             color: AppColors.navy)),
                     const SizedBox(height: 8),
-                    Text('Verified profiles build trust and stand out to employers.',
-                        style: GoogleFonts.inter(
+                    const Text('Verified profiles build trust and stand out to employers.',
+                        style: TextStyle(
                             color: AppColors.textMuted, fontSize: 14)),
                     const SizedBox(height: 24),
 
@@ -186,8 +186,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: Colors.red.shade50,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.red.shade200.withValues(alpha: 0.1)),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.red.shade200),
                       ),
                       child: Row(
                         children: [
@@ -195,7 +195,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(_error!,
-                                style: GoogleFonts.inter(
+                                style: TextStyle(
                                     color: Colors.red.shade700, fontSize: 13)),
                           ),
                         ],
@@ -208,8 +208,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: const Color(0xFFDCFCE7),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFF86EFAC).withValues(alpha: 0.1)),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFF86EFAC)),
                       ),
                       child: Row(
                         children: [
@@ -218,8 +218,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(_success!,
-                                style: GoogleFonts.inter(
-                                    color: const Color(0xFF166534), fontSize: 13)),
+                                style: const TextStyle(
+                                    color: Color(0xFF166534), fontSize: 13)),
                           ),
                         ],
                       ),
@@ -272,7 +272,7 @@ class _StatusBanner extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
@@ -280,7 +280,7 @@ class _StatusBanner extends StatelessWidget {
           const SizedBox(width: 12),
           Text(label,
               style:
-                  GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14, color: fg)),
+                  TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: fg)),
         ],
       ),
     );
@@ -307,11 +307,11 @@ class _VerificationOption extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: AppColors.cardShadowLight,
       ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(12),
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -321,8 +321,8 @@ class _VerificationOption extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: AppColors.navy.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(14),
+                  color: AppColors.navy.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(icon, color: AppColors.navy, size: 24),
               ),
@@ -332,13 +332,13 @@ class _VerificationOption extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(title,
-                        style: GoogleFonts.dmSans(
+                        style: const TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: 16,
                             color: AppColors.navy)),
                     const SizedBox(height: 4),
                     Text(description,
-                        style: GoogleFonts.inter(
+                        style: const TextStyle(
                             color: AppColors.textMuted, fontSize: 13)),
                   ],
                 ),

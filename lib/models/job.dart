@@ -16,6 +16,9 @@ class Job {
   final int? applicationsCount;
   final String? createdAt;
   final String? updatedAt;
+  final String? paymentType;
+  final double? totalEscrow;
+  final int? matchScore;
 
   Job({
     required this.id,
@@ -33,6 +36,9 @@ class Job {
     this.applicationsCount,
     this.createdAt,
     this.updatedAt,
+    this.paymentType,
+    this.totalEscrow,
+    this.matchScore,
   });
 
   String get clientName => clientUser?.name ?? 'Unknown';
@@ -86,6 +92,9 @@ class Job {
       applicationsCount: json['applicationsCount'],
       createdAt: json['createdAt'],
       updatedAt: json['updatedAt'],
+      paymentType: json['paymentType'],
+      totalEscrow: json['totalEscrow'] is num ? (json['totalEscrow'] as num).toDouble() : null,
+      matchScore: json['matchScore'] is int ? json['matchScore'] : (json['matchScore'] is num ? (json['matchScore'] as num).round() : null),
     );
   }
 
@@ -104,6 +113,9 @@ class Job {
         'applicationsCount': applicationsCount,
         'createdAt': createdAt,
         'updatedAt': updatedAt,
+        'paymentType': paymentType,
+        'totalEscrow': totalEscrow,
+        'matchScore': matchScore,
       };
 
   int get deadlineDays {
