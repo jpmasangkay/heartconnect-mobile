@@ -118,7 +118,7 @@ class _ReportDialogState extends State<ReportDialog> {
             if (_error != null) ...[
               const SizedBox(height: 8),
               Text(_error!,
-                  style: const TextStyle(fontSize: 13, color: Color(0xFFDC2626))),
+                  style: const TextStyle(fontSize: 13, color: AppColors.danger)),
             ],
             const SizedBox(height: 20),
             Row(
@@ -133,7 +133,7 @@ class _ReportDialogState extends State<ReportDialog> {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: _submitting ? null : _submit,
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFB91C1C)),
+                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.dangerDark),
                     child: _submitting
                         ? const SizedBox(
                             width: 20,

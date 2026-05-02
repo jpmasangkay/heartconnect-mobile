@@ -20,25 +20,25 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       icon: Icons.work_rounded,
       title: 'Find or Post Jobs',
       subtitle: 'Browse job listings from fellow students or post your own projects for freelancers to tackle.',
-      color: Color(0xFF2563EB),
+      color: AppColors.info,
     ),
     _OnboardingPage(
       icon: Icons.chat_bubble_rounded,
       title: 'Chat in Real-Time',
       subtitle: 'Message applicants or employers directly with real-time messaging, file sharing, and read receipts.',
-      color: Color(0xFF16A34A),
+      color: AppColors.success,
     ),
     _OnboardingPage(
       icon: Icons.star_rounded,
       title: 'Build Your Reputation',
       subtitle: 'Get verified, collect reviews, and build a trusted profile that stands out to employers.',
-      color: Color(0xFFF59E0B),
+      color: AppColors.star,
     ),
     _OnboardingPage(
       icon: Icons.security_rounded,
       title: 'Stay Safe',
       subtitle: 'Two-factor authentication, verified profiles, and reporting tools keep the community safe and trusted.',
-      color: Color(0xFF7C3AED),
+      color: AppColors.purple,
     ),
   ];
 

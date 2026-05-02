@@ -154,16 +154,16 @@ class ErrorBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFFFEE2E2),
-        border: Border.all(color: const Color(0xFFFCA5A5).withValues(alpha: 0.1)),
+        color: AppColors.dangerLight,
+        border: Border.all(color: AppColors.dangerBorder.withValues(alpha: 0.1)),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_outline_rounded, size: 18, color: Color(0xFFDC2626)),
+          const Icon(Icons.error_outline_rounded, size: 18, color: AppColors.danger),
           const SizedBox(width: 10),
           Expanded(child: Text(message,
-              style: const TextStyle(fontSize: 13, color: Color(0xFFB91C1C), fontWeight: FontWeight.w500))),
+              style: const TextStyle(fontSize: 13, color: AppColors.dangerDark, fontWeight: FontWeight.w500))),
         ],
       ),
     );
@@ -413,7 +413,7 @@ class _ConnectionStatusBarState extends State<ConnectionStatusBar>
           duration: const Duration(milliseconds: 300),
           color: widget.connecting
               ? AppColors.connecting.withValues(alpha: 0.1)
-              : const Color(0xFFDC2626).withValues(alpha: 0.1),
+              : AppColors.danger.withValues(alpha: 0.1),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -445,7 +445,7 @@ class _ConnectionStatusBarState extends State<ConnectionStatusBar>
                           }),
                         ),
                       )
-                    : const Icon(Icons.wifi_off_rounded, size: 14, color: Color(0xFFDC2626)),
+                    : const Icon(Icons.wifi_off_rounded, size: 14, color: AppColors.danger),
               ),
               const SizedBox(width: 8),
               Text(
@@ -455,7 +455,7 @@ class _ConnectionStatusBarState extends State<ConnectionStatusBar>
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: widget.connecting ? AppColors.connecting : const Color(0xFFDC2626),
+                  color: widget.connecting ? AppColors.connecting : AppColors.danger,
                 ),
               ),
             ],

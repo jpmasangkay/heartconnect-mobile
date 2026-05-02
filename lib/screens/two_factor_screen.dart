@@ -111,14 +111,14 @@ class _TwoFactorScreenState extends ConsumerState<TwoFactorScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: is2FA ? const Color(0xFFDCFCE7) : const Color(0xFFFEF3C7),
+                color: is2FA ? AppColors.successLight : AppColors.warningLight,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 children: [
                   Icon(
                     is2FA ? Icons.shield_rounded : Icons.shield_outlined,
-                    color: is2FA ? const Color(0xFF16A34A) : const Color(0xFFD97706),
+                    color: is2FA ? AppColors.success : AppColors.warning,
                     size: 28,
                   ),
                   const SizedBox(width: 12),
@@ -145,16 +145,16 @@ class _TwoFactorScreenState extends ConsumerState<TwoFactorScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFDCFCE7),
+                  color: AppColors.successLight,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFF86EFAC)),
+                  border: Border.all(color: AppColors.successBorder),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.check_circle, color: Color(0xFF16A34A), size: 20),
+                    const Icon(Icons.check_circle, color: AppColors.success, size: 20),
                     const SizedBox(width: 8),
                     Expanded(child: Text(_success!,
-                        style: const TextStyle(color: Color(0xFF166534), fontSize: 13))),
+                        style: const TextStyle(color: AppColors.successDark, fontSize: 13))),
                   ],
                 ),
               ),
@@ -165,16 +165,16 @@ class _TwoFactorScreenState extends ConsumerState<TwoFactorScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFEE2E2),
+                  color: AppColors.dangerLight,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFFFCA5A5)),
+                  border: Border.all(color: AppColors.dangerBorder),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.error_outline, color: Color(0xFFDC2626), size: 20),
+                    const Icon(Icons.error_outline, color: AppColors.danger, size: 20),
                     const SizedBox(width: 8),
                     Expanded(child: Text(_error!,
-                        style: const TextStyle(color: Color(0xFFB91C1C), fontSize: 13))),
+                        style: const TextStyle(color: AppColors.dangerDark, fontSize: 13))),
                   ],
                 ),
               ),
@@ -196,7 +196,7 @@ class _TwoFactorScreenState extends ConsumerState<TwoFactorScreen> {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: _loading ? null : _disable,
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFB91C1C)),
+                style: ElevatedButton.styleFrom(backgroundColor: AppColors.dangerDark),
                 child: _loading
                     ? const SizedBox(width: 20, height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))

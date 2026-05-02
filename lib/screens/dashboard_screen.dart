@@ -204,7 +204,7 @@ class _StudentHomeState extends ConsumerState<_StudentHome> {
                             _Divider(),
                             _StatCell(value: '$pending', label: 'Pending', highlight: pending > 0),
                             _Divider(),
-                            _StatCell(value: '$accepted', label: 'Active', highlight: accepted > 0, color: const Color(0xFF16A34A)),
+                            _StatCell(value: '$accepted', label: 'Active', highlight: accepted > 0, color: AppColors.success),
                             _Divider(),
                             _StatCell(value: '$rejected', label: 'Rejected'),
                           ],
@@ -466,7 +466,7 @@ class _ClientHomeState extends ConsumerState<_ClientHome> {
                           children: [
                             _StatCell(value: '${_jobs.length}', label: 'Total'),
                             _Divider(),
-                            _StatCell(value: '$open', label: 'Open', highlight: open > 0, color: const Color(0xFF16A34A)),
+                            _StatCell(value: '$open', label: 'Open', highlight: open > 0, color: AppColors.success),
                             _Divider(),
                             _StatCell(value: '$closed', label: 'Closed'),
                             _Divider(),
@@ -569,7 +569,7 @@ class _StudentAppCardState extends State<_StudentAppCard> {
   Widget build(BuildContext context) {
     final app = widget.app;
     final job = app.job!;
-    final borderColor = _statusAccent(app.status);
+    final borderColor = AppColors.statusAccent(app.status);
 
     return GestureDetector(
       onTap: () => context.push('/jobs/${job.id}'),
@@ -616,17 +616,7 @@ class _StudentAppCardState extends State<_StudentAppCard> {
   }
 }
 
-Color _statusAccent(String s) {
-  switch (s.toLowerCase()) {
-    case 'accepted':  return const Color(0xFF16A34A);
-    case 'pending':   return const Color(0xFFD97706);
-    case 'rejected':  return const Color(0xFFDC2626);
-    case 'withdrawn': return _muted;
-    case 'completed':
-    case 'finished':  return const Color(0xFF7C3AED);
-    default:          return _rule;
-  }
-}
+Color _statusAccent(String s) => AppColors.statusAccent(s);
 
 // ─────────────────────────────────────────────
 //  Client job card
@@ -639,7 +629,7 @@ class _ClientJobCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasApps = (job.applicationsCount ?? 0) > 0;
-    final borderColor = _statusAccent(job.status);
+    final borderColor = AppColors.statusAccent(job.status);
 
     return GestureDetector(
       onTap: () => context.push('/jobs/${job.id}'),
@@ -765,7 +755,7 @@ class _TinyBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = danger ? const Color(0xFFDC2626) : accent ? const Color(0xFF7C3AED) : _ink;
+    final c = danger ? AppColors.danger : accent ? AppColors.purple : _ink;
     return GestureDetector(
       onTap: onTap,
       child: Container(

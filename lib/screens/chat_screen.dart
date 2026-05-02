@@ -860,7 +860,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 fontSize: 15,
                               ),
                               filled: true,
-                              fillColor: const Color(0xFFF4F4F6),
+                              fillColor: AppColors.chatBubbleOther,
                               isDense: true,
                               contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 16,

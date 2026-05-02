@@ -141,14 +141,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFDCFCE7),
-                  border: Border.all(color: const Color(0xFF86EFAC).withValues(alpha: 0.1)),
+                  color: AppColors.successLight,
+                  border: Border.all(color: AppColors.successBorder.withValues(alpha: 0.1)),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(children: [
-                  const Icon(Icons.check, size: 14, color: Color(0xFF16A34A)),
+                  const Icon(Icons.check, size: 14, color: AppColors.success),
                   const SizedBox(width: 8),
-                  Text(_success!, style: const TextStyle(fontSize: 12, color: Color(0xFF15803D))),
+                  Text(_success!, style: const TextStyle(fontSize: 12, color: AppColors.successMid)),
                 ]),
               ),
               const SizedBox(height: 16),
@@ -348,7 +348,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       icon: Icons.verified_rounded,
                       label: 'Profile Verification',
                       trailing: user.isVerified
-                          ? const Text('Verified', style: TextStyle(fontSize: 12, color: Color(0xFF16A34A), fontWeight: FontWeight.w600))
+                          ? const Text('Verified', style: TextStyle(fontSize: 12, color: AppColors.success, fontWeight: FontWeight.w600))
                           : null,
                       onTap: () => context.push('/verification'),
                     ),
@@ -356,7 +356,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       icon: Icons.security_rounded,
                       label: 'Two-Factor Auth',
                       trailing: user.twoFactorEnabled
-                          ? const Text('Enabled', style: TextStyle(fontSize: 12, color: Color(0xFF16A34A), fontWeight: FontWeight.w600))
+                          ? const Text('Enabled', style: TextStyle(fontSize: 12, color: AppColors.success, fontWeight: FontWeight.w600))
                           : null,
                       onTap: () => context.push('/two-factor'),
                     ),

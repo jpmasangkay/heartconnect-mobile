@@ -189,12 +189,12 @@ class _UsersTabState extends State<_UsersTab> {
                               Text('Role: ${user['role']} | Status: ${user['verificationStatus'] ?? 'unverified'}', 
                                 style: const TextStyle(fontSize: 11, color: AppColors.textMuted)),
                               if (pendingReports > 0)
-                                Text('$pendingReports pending reports', style: const TextStyle(fontSize: 11, color: Color(0xFFD97706))),
+                                Text('$pendingReports pending reports', style: const TextStyle(fontSize: 11, color: AppColors.warning)),
                             ],
                           ),
                           trailing: user['role'] != 'admin' ? TextButton(
                             onPressed: () => _toggleBan(user),
-                            child: Text(isBanned ? 'UNBAN' : 'BAN', style: TextStyle(color: isBanned ? const Color(0xFF16A34A) : AppColors.accent, fontWeight: FontWeight.bold)),
+                            child: Text(isBanned ? 'UNBAN' : 'BAN', style: TextStyle(color: isBanned ? AppColors.success : AppColors.accent, fontWeight: FontWeight.bold)),
                           ) : const SizedBox.shrink(),
                         );
                       },
@@ -321,7 +321,7 @@ class _VerificationsTabState extends State<_VerificationsTab> {
                                     ElevatedButton(
                                       onPressed: () => _handleVerification(u['_id'], true),
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFF16A34A),
+                                        backgroundColor: AppColors.success,
                                         foregroundColor: Colors.white,
                                         minimumSize: const Size(0, 40),
                                       ),
@@ -406,16 +406,7 @@ class _ReportsTabState extends State<_ReportsTab> {
     }
   }
 
-  Color _reasonColor(String reason) {
-    switch (reason.toLowerCase()) {
-      case 'harassment': return const Color(0xFFDC2626);
-      case 'spam': return const Color(0xFFD97706);
-      case 'inappropriate': return const Color(0xFFEA580C);
-      case 'fraud': return const Color(0xFF991B1B);
-      case 'other': return AppColors.textMuted;
-      default: return AppColors.navy;
-    }
-  }
+  Color _reasonColor(String reason) => AppColors.reportReasonColor(reason);
 
   @override
   Widget build(BuildContext context) {
@@ -437,7 +428,7 @@ class _ReportsTabState extends State<_ReportsTab> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.warning_amber_rounded, size: 48, color: Color(0xFFD97706)),
+                            const Icon(Icons.warning_amber_rounded, size: 48, color: AppColors.warning),
                             const SizedBox(height: 12),
                             Text(_error!, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.textMuted)),
                             const SizedBox(height: 16),
@@ -456,7 +447,7 @@ class _ReportsTabState extends State<_ReportsTab> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.check_circle_outline, size: 56, color: Color(0xFF86EFAC)),
+                              const Icon(Icons.check_circle_outline, size: 56, color: AppColors.successBorder),
                               const SizedBox(height: 12),
                               const Text('No pending reports', style: TextStyle(fontSize: 16, color: AppColors.textMuted)),
                             ],
@@ -502,14 +493,14 @@ class _ReportsTabState extends State<_ReportsTab> {
                                         Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                           decoration: BoxDecoration(
-                                            color: targetType == 'job' ? const Color(0xFFEFF6FF) : const Color(0xFFFAF5FF),
+                                            color: targetType == 'job' ? AppColors.jobBadgeBg : AppColors.userBadgeBg,
                                             borderRadius: BorderRadius.circular(8),
                                           ),
                                           child: Text(
                                             targetType.toUpperCase(),
                                             style: TextStyle(
                                               fontSize: 10, fontWeight: FontWeight.w700,
-                                              color: targetType == 'job' ? const Color(0xFF1D4ED8) : const Color(0xFF7E22CE),
+                                              color: targetType == 'job' ? AppColors.jobBadgeFg : AppColors.userBadgeFg,
                                             ),
                                           ),
                                         ),
@@ -574,7 +565,7 @@ class _ReportsTabState extends State<_ReportsTab> {
                                           icon: const Icon(Icons.gavel, size: 16),
                                           label: const Text('Take Action'),
                                           style: ElevatedButton.styleFrom(
-                                            backgroundColor: const Color(0xFFDC2626),
+                                            backgroundColor: AppColors.danger,
                                             foregroundColor: Colors.white,
                                             minimumSize: const Size(0, 38),
                                             padding: const EdgeInsets.symmetric(horizontal: 14),

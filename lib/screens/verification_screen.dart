@@ -117,7 +117,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                       child: Column(
                         children: [
                           const Icon(Icons.verified_rounded,
-                              size: 80, color: Color(0xFF16A34A)),
+                              size: 80, color: AppColors.success),
                           const SizedBox(height: 16),
                           const Text('Your profile is verified!',
                               style: TextStyle(
@@ -132,7 +132,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                       child: Column(
                         children: [
                           const Icon(Icons.hourglass_top_rounded,
-                              size: 80, color: Color(0xFFD97706)),
+                              size: 80, color: AppColors.warning),
                           const SizedBox(height: 16),
                           const Text('Verification pending',
                               style: TextStyle(
@@ -185,18 +185,18 @@ class _VerificationScreenState extends State<VerificationScreen> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFEE2E2),
+                        color: AppColors.dangerLight,
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFFFCA5A5)),
+                        border: Border.all(color: AppColors.dangerBorder),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.error_outline, color: Color(0xFFDC2626), size: 20),
+                          const Icon(Icons.error_outline, color: AppColors.danger, size: 20),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(_error!,
                                 style: const TextStyle(
-                                    color: Color(0xFFB91C1C), fontSize: 13)),
+                                    color: AppColors.dangerDark, fontSize: 13)),
                           ),
                         ],
                       ),
@@ -207,19 +207,19 @@ class _VerificationScreenState extends State<VerificationScreen> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFDCFCE7),
+                        color: AppColors.successLight,
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFF86EFAC)),
+                        border: Border.all(color: AppColors.successBorder),
                       ),
                       child: Row(
                         children: [
                           const Icon(Icons.check_circle_outline,
-                              color: Color(0xFF16A34A), size: 20),
+                              color: AppColors.success, size: 20),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(_success!,
                                 style: const TextStyle(
-                                    color: Color(0xFF166534), fontSize: 13)),
+                                    color: AppColors.successDark, fontSize: 13)),
                           ),
                         ],
                       ),
@@ -244,26 +244,26 @@ class _StatusBanner extends StatelessWidget {
     String label;
     switch (status) {
       case 'verified':
-        bg = const Color(0xFFDCFCE7);
-        fg = const Color(0xFF16A34A);
+        bg = AppColors.successLight;
+        fg = AppColors.success;
         icon = Icons.verified_rounded;
         label = 'Verified${method != null ? ' via ${method!.replaceAll('_', ' ')}' : ''}';
         break;
       case 'pending':
-        bg = const Color(0xFFFEF3C7);
-        fg = const Color(0xFFD97706);
+        bg = AppColors.warningLight;
+        fg = AppColors.warning;
         icon = Icons.hourglass_top_rounded;
         label = 'Pending review';
         break;
       case 'rejected':
-        bg = const Color(0xFFFEE2E2);
-        fg = const Color(0xFFDC2626);
+        bg = AppColors.dangerLight;
+        fg = AppColors.danger;
         icon = Icons.cancel_rounded;
         label = 'Verification rejected — try again';
         break;
       default:
-        bg = const Color(0xFFF3F4F6);
-        fg = const Color(0xFF6B7280);
+        bg = AppColors.creamDark;
+        fg = AppColors.textMuted;
         icon = Icons.shield_outlined;
         label = 'Not verified';
     }

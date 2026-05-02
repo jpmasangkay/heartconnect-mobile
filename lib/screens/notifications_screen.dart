@@ -195,17 +195,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Color _typeColor(String type) {
     switch (type) {
       case 'application_new':
-        return const Color(0xFF2563EB);
+        return AppColors.info;
       case 'application_status':
-        return const Color(0xFFD97706);
+        return AppColors.warning;
       case 'message_new':
         return AppColors.navy;
       case 'job_status':
-        return const Color(0xFF16A34A);
+        return AppColors.success;
       case 'review_new':
-        return const Color(0xFFF59E0B);
+        return AppColors.star;
       case 'verification_status':
-        return const Color(0xFF7C3AED);
+        return AppColors.purple;
       default:
         return AppColors.textMuted;
     }

@@ -354,7 +354,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                               ...List.generate(5, (i) => Icon(
                                 i < r.rating ? Icons.star_rounded : Icons.star_outline_rounded,
                                 size: 14,
-                                color: i < r.rating ? const Color(0xFFF59E0B) : AppColors.border,
+                                color: i < r.rating ? AppColors.star : AppColors.border,
                               )),
                               const SizedBox(width: 8),
                               Expanded(
@@ -423,8 +423,8 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
         child: Row(children: [
           Container(
             padding: const EdgeInsets.all(10),
-            decoration: const BoxDecoration(color: Color(0xFFDCFCE7), shape: BoxShape.circle),
-            child: const Icon(Icons.star_rounded, color: Color(0xFF16A34A), size: 20),
+            decoration: const BoxDecoration(color: AppColors.successLight, shape: BoxShape.circle),
+            child: const Icon(Icons.star_rounded, color: AppColors.success, size: 20),
           ),
           const SizedBox(width: 12),
           const Expanded(
@@ -506,8 +506,8 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
         child: Column(children: [
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: const Color(0xFFDCFCE7), shape: BoxShape.circle),
-            child: const Icon(Icons.check_rounded, color: Color(0xFF16A34A), size: 28),
+            decoration: const BoxDecoration(color: AppColors.successLight, shape: BoxShape.circle),
+            child: const Icon(Icons.check_rounded, color: AppColors.success, size: 28),
           ),
           const SizedBox(height: 12),
           const Text('Application Submitted!', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: AppColors.navy)),
@@ -530,8 +530,8 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
           OutlinedButton(
             onPressed: _withdraw,
             style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFFDC2626),
-              side: const BorderSide(color: Color(0xFFDC2626), width: 1.5),
+              foregroundColor: AppColors.danger,
+              side: const BorderSide(color: AppColors.danger, width: 1.5),
               minimumSize: const Size(double.infinity, 46),
             ),
             child: const Text('Withdraw Application'),
@@ -577,16 +577,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
     );
   }
 
-  Color _gradientColor(String cat) {
-    switch (cat) {
-      case 'Web Development': return const Color(0xFF1A1D2B);
-      case 'Graphic Design': return const Color(0xFF6B21A8);
-      case 'Cybersecurity': return const Color(0xFF0D47A1);
-      case 'Marketing': return const Color(0xFFE53935);
-      case 'Data Science': return const Color(0xFF1565C0);
-      default: return AppColors.navy;
-    }
-  }
+  Color _gradientColor(String cat) => AppColors.categoryColor(cat);
 
   String _fmt(String n) => n.replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},');
 
@@ -760,7 +751,7 @@ class _AppCard extends StatelessWidget {
                 icon: const Icon(Icons.check_rounded, size: 16),
                 label: const Text('Accept'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF16A34A),
+                  backgroundColor: AppColors.success,
                   minimumSize: const Size(double.infinity, 44),
                 ),
               ),
@@ -772,8 +763,8 @@ class _AppCard extends StatelessWidget {
                 icon: const Icon(Icons.close_rounded, size: 16),
                 label: const Text('Reject'),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFFDC2626),
-                  side: const BorderSide(color: Color(0xFFDC2626)),
+                  foregroundColor: AppColors.danger,
+                  side: const BorderSide(color: AppColors.danger),
                   minimumSize: const Size(double.infinity, 44),
                 ),
               ),
@@ -799,7 +790,7 @@ class _MetaTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = danger ? const Color(0xFFDC2626) : (accent ? AppColors.navy : AppColors.textBody);
+    final c = danger ? AppColors.danger : (accent ? AppColors.navy : AppColors.textBody);
     return Column(children: [
       Icon(icon, size: 18, color: c.withValues(alpha: 0.7)),
       const SizedBox(height: 4),

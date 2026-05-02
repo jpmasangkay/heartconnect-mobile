@@ -2,21 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
-  // ── Core palette (Figma: clean white + dark navy + red accent) ──────
-  static const navy = Color(0xFF1A1D2B);
-  static const navyLight = Color(0xFF2A2D3B);
+  // ── Core palette (Stitch: clean white + dark slate + red accent) ─────
+  static const navy = Color(0xFF0F172A);
+  static const navyLight = Color(0xFF1E293B);
   static const accent = Color(0xFFE53935);
   static const background = Color(0xFFFFFFFF);
   static const cream = Color(0xFFF8F9FA);
   static const creamDark = Color(0xFFF0F0F0);
   static const surface = Colors.white;
-  static const textBody = Color(0xFF1A1D2B);
+  static const textBody = Color(0xFF0F172A);
   static const textMuted = Color(0xFF757575);
   static const border = Color(0xFFE0E0E0);
   static const sand = Color(0xFFBDBDBD);
 
   // Shared screen-level tokens (previously duplicated across screens)
-  static const ink = Color(0xFF1A1D2B);
+  static const ink = Color(0xFF0F172A);
   static const parchment = Color(0xFFFFFFFF);
   static const rust = Color(0xFFE53935);
   static const muted = Color(0xFF757575);
@@ -26,6 +26,73 @@ class AppColors {
   static const online = Color(0xFF22C55E);
   static const offline = Color(0xFF9CA3AF);
   static const connecting = Color(0xFFF59E0B);
+
+  // ── Semantic status palette ──────────────────────────────────────────────
+  static const success      = Color(0xFF16A34A);
+  static const successLight = Color(0xFFDCFCE7);
+  static const successBorder= Color(0xFF86EFAC);
+  static const successDark  = Color(0xFF166534);
+  static const successMid   = Color(0xFF15803D);
+
+  static const danger       = Color(0xFFDC2626);
+  static const dangerLight  = Color(0xFFFEE2E2);
+  static const dangerBorder = Color(0xFFFCA5A5);
+  static const dangerDark   = Color(0xFFB91C1C);
+
+  static const warning      = Color(0xFFD97706);
+  static const warningLight = Color(0xFFFEF3C7);
+  static const warningAmber = Color(0xFF92400E);
+
+  static const star         = Color(0xFFF59E0B);
+  static const info         = Color(0xFF2563EB);
+  static const purple       = Color(0xFF7C3AED);
+
+  // ── Category colors ────────────────────────────────────────────────────
+  static Color categoryColor(String cat) {
+    switch (cat) {
+      case 'Web Development': return const Color(0xFF0F172A);
+      case 'Graphic Design':  return const Color(0xFF6B21A8);
+      case 'Cybersecurity':   return const Color(0xFF0D47A1);
+      case 'Marketing':       return const Color(0xFFE53935);
+      case 'Data Science':    return const Color(0xFF1565C0);
+      default:                return navy;
+    }
+  }
+
+  // ── Status accent (left-border cards) ──────────────────────────────────
+  static Color statusAccent(String s) {
+    switch (s.toLowerCase()) {
+      case 'accepted':  return success;
+      case 'pending':   return warning;
+      case 'rejected':  return danger;
+      case 'withdrawn': return muted;
+      case 'completed':
+      case 'finished':  return purple;
+      default:          return rule;
+    }
+  }
+
+  // ── Admin: report reason colors ────────────────────────────────────────
+  static const orange     = Color(0xFFEA580C);
+  static const maroon     = Color(0xFF991B1B);
+  static const jobBadgeBg = Color(0xFFEFF6FF);
+  static const jobBadgeFg = Color(0xFF1D4ED8);
+  static const userBadgeBg= Color(0xFFFAF5FF);
+  static const userBadgeFg= Color(0xFF7E22CE);
+
+  static Color reportReasonColor(String reason) {
+    switch (reason.toLowerCase()) {
+      case 'harassment':    return danger;
+      case 'spam':          return warning;
+      case 'inappropriate': return orange;
+      case 'fraud':         return maroon;
+      case 'other':         return textMuted;
+      default:              return navy;
+    }
+  }
+
+  // ── Chat ───────────────────────────────────────────────────────────────
+  static const chatBubbleOther = Color(0xFFF4F4F6);
 
   /// Base origin for loading uploaded files (avatars, chat attachments, etc.).
   /// Strips the `/api` suffix from the REST base URL.

@@ -101,7 +101,7 @@ class _ReviewDialogState extends State<ReviewDialog> {
                         _rating >= starIndex ? Icons.star_rounded : Icons.star_outline_rounded,
                         size: 40,
                         color: _rating >= starIndex
-                            ? const Color(0xFFF59E0B)
+                            ? AppColors.star
                             : AppColors.border,
                       ),
                     ),
@@ -116,7 +116,7 @@ class _ReviewDialogState extends State<ReviewDialog> {
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFFF59E0B),
+                  color: AppColors.star,
                 ),
               ),
             ],
@@ -133,7 +133,7 @@ class _ReviewDialogState extends State<ReviewDialog> {
             if (_error != null) ...[
               const SizedBox(height: 8),
               Text(_error!,
-                  style: const TextStyle(fontSize: 13, color: Color(0xFFDC2626))),
+                  style: const TextStyle(fontSize: 13, color: AppColors.danger)),
             ],
             const SizedBox(height: 20),
             Row(

@@ -159,7 +159,7 @@ class _SummaryCard extends StatelessWidget {
               color: AppColors.creamDark,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.star_rounded, color: Color(0xFFF59E0B)),
+            child: const Icon(Icons.star_rounded, color: AppColors.star),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -242,7 +242,7 @@ class _ReviewTile extends StatelessWidget {
                 (i) => Icon(
                   i < r.rating ? Icons.star_rounded : Icons.star_outline_rounded,
                   size: 14,
-                  color: i < r.rating ? const Color(0xFFF59E0B) : AppColors.border,
+                  color: i < r.rating ? AppColors.star : AppColors.border,
                 ),
               ),
               const SizedBox(width: 8),

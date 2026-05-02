@@ -172,7 +172,7 @@ class _JobBoardScreenState extends ConsumerState<JobBoardScreen> {
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [Color(0xFF1A1D2B), Color(0xFF2A2D3B)],
+                      colors: [AppColors.navy, Color(0xFF1E293B)],
                     ),
                   ),
                   child: SafeArea(
@@ -610,7 +610,7 @@ class _JobCard extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             boxShadow: isUrgent
-                ? [BoxShadow(color: const Color(0xFFDC2626).withValues(alpha: 0.1), blurRadius: 16, offset: const Offset(0, 4))]
+                ? [BoxShadow(color: AppColors.danger.withValues(alpha: 0.1), blurRadius: 16, offset: const Offset(0, 4))]
                 : AppColors.cardShadowLight,
           ),
           child: Column(
@@ -646,10 +646,10 @@ class _JobCard extends StatelessWidget {
                           margin: const EdgeInsets.only(right: 6),
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFEF3C7),
+                            color: AppColors.warningLight,
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: const Text('NEW', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Color(0xFF92400E), letterSpacing: 0.5)),
+                          child: const Text('NEW', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.warningAmber, letterSpacing: 0.5)),
                         ),
                       StatusBadge(job.status),
                     ]),
@@ -682,16 +682,16 @@ class _JobCard extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: isUrgent ? const Color(0xFFDC2626).withValues(alpha: 0.1) : AppColors.creamDark,
+                          color: isUrgent ? AppColors.danger.withValues(alpha: 0.1) : AppColors.creamDark,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(children: [
-                          Icon(Icons.access_time_rounded, size: 13, color: isUrgent ? const Color(0xFFDC2626) : AppColors.textMuted),
+                          Icon(Icons.access_time_rounded, size: 13, color: isUrgent ? AppColors.danger : AppColors.textMuted),
                           const SizedBox(width: 4),
                           Text(
                             days > 0 ? '$days days left' : 'Expired',
                             style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600,
-                                color: isUrgent ? const Color(0xFFDC2626) : AppColors.textMuted),
+                                color: isUrgent ? AppColors.danger : AppColors.textMuted),
                           ),
                         ]),
                       ),
@@ -708,14 +708,5 @@ class _JobCard extends StatelessWidget {
 
   String _formatNum(String n) => n.replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},');
 
-  Color _categoryColor(String cat) {
-    switch (cat) {
-      case 'Web Development': return const Color(0xFF1A1D2B);
-      case 'Graphic Design': return const Color(0xFF6B21A8);
-      case 'Cybersecurity': return const Color(0xFF0D47A1);
-      case 'Marketing': return const Color(0xFFE53935);
-      case 'Data Science': return const Color(0xFF1565C0);
-      default: return AppColors.navy;
-    }
-  }
+  Color _categoryColor(String cat) => AppColors.categoryColor(cat);
 }

@@ -25,6 +25,24 @@ class _TwoFactorVerifyDialogState extends ConsumerState<TwoFactorVerifyDialog> {
   String? _error;
 
   @override
+  void initState() {
+    super.initState();
+    // Automatically send the email code when the dialog opens
+    if (widget.method == 'email') {
+      _sendInitialCode();
+    }
+  }
+
+  Future<void> _sendInitialCode() async {
+    try {
+      final service = ref.read(twoFactorServiceProvider);
+      await service.sendEmailCode(widget.tempToken);
+    } catch (_) {
+      // Silently fail — user can tap "Resend code" manually
+    }
+  }
+
+  @override
   void dispose() {
     _codeController.dispose();
     super.dispose();
@@ -123,7 +141,7 @@ class _TwoFactorVerifyDialogState extends ConsumerState<TwoFactorVerifyDialog> {
             if (_error != null) ...[
               const SizedBox(height: 8),
               Text(_error!,
-                  style: const TextStyle(fontSize: 13, color: Color(0xFFDC2626))),
+                  style: const TextStyle(fontSize: 13, color: AppColors.danger)),
             ],
             if (isEmail) ...[
               const SizedBox(height: 8),

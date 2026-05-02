@@ -72,7 +72,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFB91C1C)),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.dangerDark),
             child: const Text('Block'),
           ),
         ],
@@ -157,7 +157,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             Text(user.name),
             if (user.isVerified) ...[
               const SizedBox(width: 6),
-              const Icon(Icons.verified_rounded, size: 18, color: Color(0xFF16A34A)),
+              const Icon(Icons.verified_rounded, size: 18, color: AppColors.success),
             ],
           ],
         ),
@@ -268,7 +268,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   Row(children: [
                     const SectionLabel('Reviews'),
                     const Spacer(),
-                    Icon(Icons.star_rounded, size: 16, color: const Color(0xFFF59E0B)),
+                    Icon(Icons.star_rounded, size: 16, color: AppColors.star),
                     const SizedBox(width: 4),
                     Text(_avgRating.toStringAsFixed(1),
                         style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
@@ -285,7 +285,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           ...List.generate(5, (i) => Icon(
                             i < r.rating ? Icons.star_rounded : Icons.star_outline_rounded,
                             size: 14,
-                            color: i < r.rating ? const Color(0xFFF59E0B) : AppColors.border,
+                            color: i < r.rating ? AppColors.star : AppColors.border,
                           )),
                           const SizedBox(width: 8),
                           Text(r.reviewer?.name ?? 'Anonymous',

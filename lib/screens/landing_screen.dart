@@ -286,36 +286,36 @@ class LandingScreen extends StatelessWidget {
   }
 }
 
-const _categories = [
+final _categories = [
   (
     title: 'Web Development',
     desc: 'Build landing pages, web apps, and everything in between.',
     icon: Icons.code,
-    color: Color(0xFF1A1D2B),
+    color: AppColors.categoryColor('Web Development'),
   ),
   (
     title: 'Graphic Design',
     desc: 'Brand identity, logos, social content — make it iconic.',
     icon: Icons.palette,
-    color: Color(0xFF6B21A8),
+    color: AppColors.categoryColor('Graphic Design'),
   ),
   (
     title: 'Cybersecurity',
     desc: 'Pen testing, compliance audits, and threat analysis.',
     icon: Icons.shield,
-    color: Color(0xFF0D47A1),
+    color: AppColors.categoryColor('Cybersecurity'),
   ),
   (
     title: 'Marketing',
     desc: 'Drive results with strategy and student-led execution.',
     icon: Icons.campaign,
-    color: Color(0xFFE53935),
+    color: AppColors.categoryColor('Marketing'),
   ),
   (
     title: 'Data Science',
     desc: 'Analytics, ML models, dashboards and data pipelines.',
     icon: Icons.bar_chart,
-    color: Color(0xFF1565C0),
+    color: AppColors.categoryColor('Data Science'),
   ),
 ];
 
