@@ -413,7 +413,7 @@ class _ConnectionStatusBarState extends State<ConnectionStatusBar>
           duration: const Duration(milliseconds: 300),
           color: widget.connecting
               ? AppColors.connecting.withValues(alpha: 0.1)
-              : Colors.red.withValues(alpha: 0.1),
+              : const Color(0xFFDC2626).withValues(alpha: 0.1),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -445,7 +445,7 @@ class _ConnectionStatusBarState extends State<ConnectionStatusBar>
                           }),
                         ),
                       )
-                    : const Icon(Icons.wifi_off_rounded, size: 14, color: Colors.red),
+                    : const Icon(Icons.wifi_off_rounded, size: 14, color: Color(0xFFDC2626)),
               ),
               const SizedBox(width: 8),
               Text(
@@ -455,7 +455,7 @@ class _ConnectionStatusBarState extends State<ConnectionStatusBar>
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: widget.connecting ? AppColors.connecting : Colors.red,
+                  color: widget.connecting ? AppColors.connecting : const Color(0xFFDC2626),
                 ),
               ),
             ],

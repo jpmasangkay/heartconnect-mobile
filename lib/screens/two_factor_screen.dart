@@ -165,16 +165,16 @@ class _TwoFactorScreenState extends ConsumerState<TwoFactorScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.red.shade50,
+                  color: const Color(0xFFFEE2E2),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.red.shade200),
+                  border: Border.all(color: const Color(0xFFFCA5A5)),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.error_outline, color: Colors.red.shade600, size: 20),
+                    const Icon(Icons.error_outline, color: Color(0xFFDC2626), size: 20),
                     const SizedBox(width: 8),
                     Expanded(child: Text(_error!,
-                        style: TextStyle(color: Colors.red.shade700, fontSize: 13))),
+                        style: const TextStyle(color: Color(0xFFB91C1C), fontSize: 13))),
                   ],
                 ),
               ),
@@ -196,7 +196,7 @@ class _TwoFactorScreenState extends ConsumerState<TwoFactorScreen> {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: _loading ? null : _disable,
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade700),
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFB91C1C)),
                 child: _loading
                     ? const SizedBox(width: 20, height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))

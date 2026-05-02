@@ -205,17 +205,17 @@ class _EditJobScreenState extends State<EditJobScreen> {
           if (!_confirmDelete)
             TextButton.icon(
               onPressed: () => setState(() => _confirmDelete = true),
-              icon: const Icon(Icons.delete_outline, size: 16, color: Colors.red),
-              label: const Text('Delete', style: TextStyle(color: Colors.red, fontSize: 13)),
+              icon: const Icon(Icons.delete_outline, size: 16, color: AppColors.accent),
+              label: const Text('Delete', style: TextStyle(color: AppColors.accent, fontSize: 13)),
             )
           else
             Row(mainAxisSize: MainAxisSize.min, children: [
-              const Text('Delete?', style: TextStyle(fontSize: 12, color: Colors.red)),
+              const Text('Delete?', style: TextStyle(fontSize: 12, color: AppColors.accent)),
               const SizedBox(width: 6),
               TextButton(
                 onPressed: _deleting ? null : _delete,
                 child: Text(_deleting ? '...' : 'Yes',
-                    style: const TextStyle(fontSize: 12, color: Colors.red, fontWeight: FontWeight.w700)),
+                    style: const TextStyle(fontSize: 12, color: AppColors.accent, fontWeight: FontWeight.w700)),
               ),
               TextButton(
                 onPressed: () => setState(() => _confirmDelete = false),

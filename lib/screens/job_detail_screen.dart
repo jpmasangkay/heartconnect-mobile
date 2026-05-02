@@ -530,8 +530,8 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
           OutlinedButton(
             onPressed: _withdraw,
             style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.red,
-              side: const BorderSide(color: Colors.red, width: 1.5),
+              foregroundColor: const Color(0xFFDC2626),
+              side: const BorderSide(color: Color(0xFFDC2626), width: 1.5),
               minimumSize: const Size(double.infinity, 46),
             ),
             child: const Text('Withdraw Application'),
@@ -772,8 +772,8 @@ class _AppCard extends StatelessWidget {
                 icon: const Icon(Icons.close_rounded, size: 16),
                 label: const Text('Reject'),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.red,
-                  side: const BorderSide(color: Colors.red),
+                  foregroundColor: const Color(0xFFDC2626),
+                  side: const BorderSide(color: Color(0xFFDC2626)),
                   minimumSize: const Size(double.infinity, 44),
                 ),
               ),
@@ -799,7 +799,7 @@ class _MetaTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = danger ? Colors.red : (accent ? AppColors.navy : AppColors.textBody);
+    final c = danger ? const Color(0xFFDC2626) : (accent ? AppColors.navy : AppColors.textBody);
     return Column(children: [
       Icon(icon, size: 18, color: c.withValues(alpha: 0.7)),
       const SizedBox(height: 4),

@@ -148,7 +148,7 @@ class LandingScreen extends StatelessWidget {
                                             ),
                                           ),
                                           child:
-                                              const Text('Be a Freelancer'),
+                                              const Text('Start Earning'),
                                         ),
                                       ),
                                       const SizedBox(width: 12),

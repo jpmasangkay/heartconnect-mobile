@@ -519,7 +519,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.red, fontWeight: FontWeight.w700)),
+            child: const Text('Delete', style: TextStyle(color: AppColors.accent, fontWeight: FontWeight.w700)),
           ),
         ],
       ),

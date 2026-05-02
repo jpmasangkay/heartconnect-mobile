@@ -133,7 +133,7 @@ class _ReviewDialogState extends State<ReviewDialog> {
             if (_error != null) ...[
               const SizedBox(height: 8),
               Text(_error!,
-                  style: const TextStyle(fontSize: 13, color: Colors.red)),
+                  style: const TextStyle(fontSize: 13, color: Color(0xFFDC2626))),
             ],
             const SizedBox(height: 20),
             Row(

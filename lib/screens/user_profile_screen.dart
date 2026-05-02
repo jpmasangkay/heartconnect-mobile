@@ -72,7 +72,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade700),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFB91C1C)),
             child: const Text('Block'),
           ),
         ],

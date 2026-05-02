@@ -142,7 +142,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: AppColors.accent),
             child: const Text('Delete'),
           ),
         ],
@@ -308,12 +308,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     children: [
                       Icon(Icons.delete_sweep_rounded,
                           size: 20,
-                          color: hasRead ? Colors.red : AppColors.textMuted),
+                          color: hasRead ? AppColors.accent : AppColors.textMuted),
                       const SizedBox(width: 10),
                       Text('Delete all read',
                           style: TextStyle(
                             fontSize: 14,
-                            color: hasRead ? Colors.red : AppColors.textMuted,
+                            color: hasRead ? AppColors.accent : AppColors.textMuted,
                           )),
                     ],
                   ),

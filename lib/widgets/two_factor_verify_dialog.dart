@@ -123,7 +123,7 @@ class _TwoFactorVerifyDialogState extends ConsumerState<TwoFactorVerifyDialog> {
             if (_error != null) ...[
               const SizedBox(height: 8),
               Text(_error!,
-                  style: const TextStyle(fontSize: 13, color: Colors.red)),
+                  style: const TextStyle(fontSize: 13, color: Color(0xFFDC2626))),
             ],
             if (isEmail) ...[
               const SizedBox(height: 8),

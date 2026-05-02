@@ -610,7 +610,7 @@ class _JobCard extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             boxShadow: isUrgent
-                ? [BoxShadow(color: Colors.red.withValues(alpha: 0.1), blurRadius: 16, offset: const Offset(0, 4))]
+                ? [BoxShadow(color: const Color(0xFFDC2626).withValues(alpha: 0.1), blurRadius: 16, offset: const Offset(0, 4))]
                 : AppColors.cardShadowLight,
           ),
           child: Column(
@@ -682,16 +682,16 @@ class _JobCard extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: isUrgent ? Colors.red.withValues(alpha: 0.1) : AppColors.creamDark,
+                          color: isUrgent ? const Color(0xFFDC2626).withValues(alpha: 0.1) : AppColors.creamDark,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(children: [
-                          Icon(Icons.access_time_rounded, size: 13, color: isUrgent ? Colors.red : AppColors.textMuted),
+                          Icon(Icons.access_time_rounded, size: 13, color: isUrgent ? const Color(0xFFDC2626) : AppColors.textMuted),
                           const SizedBox(width: 4),
                           Text(
                             days > 0 ? '$days days left' : 'Expired',
                             style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600,
-                                color: isUrgent ? Colors.red : AppColors.textMuted),
+                                color: isUrgent ? const Color(0xFFDC2626) : AppColors.textMuted),
                           ),
                         ]),
                       ),
